@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+env/
+venv/
+
+# Large candidate datasets (download separately; exceeds GitHub limits)
+data/candidates.jsonl
+data/candidates.jsonl.gz
+
+# Local environment
+.env
+.env.*

@@ -5,7 +5,12 @@ from __future__ import annotations
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from pipeline.config import SENTENCE_ENCODE_BATCH_SIZE, THRESHOLDS
+from pipeline.config import (
+    GPU_ENCODE_BATCH_SIZE,
+    SENTENCE_ENCODE_BATCH_SIZE,
+    THRESHOLDS,
+)
+from pipeline.model_utils import model_on_cuda
 
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
@@ -19,9 +24,10 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 def encode_sentences(sentences: list[str], model: SentenceTransformer) -> np.ndarray:
     """Batch encode candidate sentences with passage: prefix."""
     prefixed = [f"passage: {s}" for s in sentences]
+    batch_size = GPU_ENCODE_BATCH_SIZE if model_on_cuda(model) else SENTENCE_ENCODE_BATCH_SIZE
     vecs = model.encode(
         prefixed,
-        batch_size=SENTENCE_ENCODE_BATCH_SIZE,
+        batch_size=batch_size,
         show_progress_bar=False,
         normalize_embeddings=False,
     )

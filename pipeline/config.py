@@ -85,6 +85,15 @@ QUERY_EVAL_TEXT = (
 
 INDEX_BATCH_SIZE = 500
 SENTENCE_ENCODE_BATCH_SIZE = 64
+GPU_ENCODE_BATCH_SIZE = 128
+ENCODE_DEVICE = "auto"  # "auto" | "cuda" | "cpu"
+
+# Parallel precompute tuning (see pipeline/parallel.py)
+MAX_PRECOMPUTE_WORKERS = 8
+MODEL_RAM_GB_ESTIMATE = 0.45
+PRECOMPUTE_RAM_RESERVE_GB = 4.0
+PRECOMPUTE_WORKERS: int | None = None  # None = auto from CPU/RAM
 
 DEFAULT_CANDIDATES_PATH = DATA_DIR / "candidates.jsonl.gz"
+CANDIDATES_JSONL_PATH = DATA_DIR / "candidates.jsonl"
 SAMPLE_CANDIDATES_PATH = DATA_DIR / "sample_candidates.json"

@@ -5,11 +5,31 @@ __pycache__/
 .venv/
 env/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Large candidate datasets (download separately; exceeds GitHub limits)
 data/candidates.jsonl
 data/candidates.jsonl.gz
 
-# Local environment
+# Generated pipeline artifacts (rebuild with precompute.py / rank.py)
+artifacts/*.faiss
+artifacts/id_map.json
+artifacts/retrieval_results.json
+artifacts/ranker_model.json
+artifacts/role_embeddings.faiss
+artifacts/anchors/*.npy
+
+# Naivee generated outputs
+naivee/artifacts/*.faiss
+naivee/artifacts/*.json
+naivee/artifacts/*.jsonl
+
+# Local environment and secrets
 .env
 .env.*
+
+# Install / run logs
+torch_install.log
+*.log

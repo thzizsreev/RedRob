@@ -1,0 +1,252 @@
+[
+  {
+    "rank": 1,
+    "candidate_id": "CAND_0000031",
+    "score": 0.7892276048660278
+  },
+  {
+    "rank": 2,
+    "candidate_id": "CAND_0000001",
+    "score": 0.748191237449646
+  },
+  {
+    "rank": 3,
+    "candidate_id": "CAND_0000010",
+    "score": 0.7326880693435669
+  },
+  {
+    "rank": 4,
+    "candidate_id": "CAND_0000042",
+    "score": 0.726694643497467
+  },
+  {
+    "rank": 5,
+    "candidate_id": "CAND_0000020",
+    "score": 0.726129412651062
+  },
+  {
+    "rank": 6,
+    "candidate_id": "CAND_0000024",
+    "score": 0.7242835164070129
+  },
+  {
+    "rank": 7,
+    "candidate_id": "CAND_0000022",
+    "score": 0.7204563617706299
+  },
+  {
+    "rank": 8,
+    "candidate_id": "CAND_0000021",
+    "score": 0.7185953259468079
+  },
+  {
+    "rank": 9,
+    "candidate_id": "CAND_0000004",
+    "score": 0.7160131931304932
+  },
+  {
+    "rank": 10,
+    "candidate_id": "CAND_0000026",
+    "score": 0.7155160307884216
+  },
+  {
+    "rank": 11,
+    "candidate_id": "CAND_0000045",
+    "score": 0.7153463363647461
+  },
+  {
+    "rank": 12,
+    "candidate_id": "CAND_0000040",
+    "score": 0.713821291923523
+  },
+  {
+    "rank": 13,
+    "candidate_id": "CAND_0000034",
+    "score": 0.7108523845672607
+  },
+  {
+    "rank": 14,
+    "candidate_id": "CAND_0000015",
+    "score": 0.7103671431541443
+  },
+  {
+    "rank": 15,
+    "candidate_id": "CAND_0000002",
+    "score": 0.7100292444229126
+  },
+  {
+    "rank": 16,
+    "candidate_id": "CAND_0000027",
+    "score": 0.708511471748352
+  },
+  {
+    "rank": 17,
+    "candidate_id": "CAND_0000030",
+    "score": 0.7079911828041077
+  },
+  {
+    "rank": 18,
+    "candidate_id": "CAND_0000032",
+    "score": 0.7072231769561768
+  },
+  {
+    "rank": 19,
+    "candidate_id": "CAND_0000041",
+    "score": 0.7071496844291687
+  },
+  {
+    "rank": 20,
+    "candidate_id": "CAND_0000013",
+    "score": 0.7058755159378052
+  },
+  {
+    "rank": 21,
+    "candidate_id": "CAND_0000046",
+    "score": 0.7046836018562317
+  },
+  {
+    "rank": 22,
+    "candidate_id": "CAND_0000036",
+    "score": 0.7030375599861145
+  },
+  {
+    "rank": 23,
+    "candidate_id": "CAND_0000048",
+    "score": 0.7026468515396118
+  },
+  {
+    "rank": 24,
+    "candidate_id": "CAND_0000016",
+    "score": 0.7017918229103088
+  },
+  {
+    "rank": 25,
+    "candidate_id": "CAND_0000037",
+    "score": 0.7016437649726868
+  },
+  {
+    "rank": 26,
+    "candidate_id": "CAND_0000008",
+    "score": 0.7012232542037964
+  },
+  {
+    "rank": 27,
+    "candidate_id": "CAND_0000049",
+    "score": 0.701116144657135
+  },
+  {
+    "rank": 28,
+    "candidate_id": "CAND_0000029",
+    "score": 0.6999757289886475
+  },
+  {
+    "rank": 29,
+    "candidate_id": "CAND_0000017",
+    "score": 0.6996270418167114
+  },
+  {
+    "rank": 30,
+    "candidate_id": "CAND_0000018",
+    "score": 0.6985675692558289
+  },
+  {
+    "rank": 31,
+    "candidate_id": "CAND_0000009",
+    "score": 0.6976310014724731
+  },
+  {
+    "rank": 32,
+    "candidate_id": "CAND_0000033",
+    "score": 0.697169303894043
+  },
+  {
+    "rank": 33,
+    "candidate_id": "CAND_0000038",
+    "score": 0.6959676742553711
+  },
+  {
+    "rank": 34,
+    "candidate_id": "CAND_0000011",
+    "score": 0.6957884430885315
+  },
+  {
+    "rank": 35,
+    "candidate_id": "CAND_0000025",
+    "score": 0.6952589154243469
+  },
+  {
+    "rank": 36,
+    "candidate_id": "CAND_0000007",
+    "score": 0.6947810649871826
+  },
+  {
+    "rank": 37,
+    "candidate_id": "CAND_0000050",
+    "score": 0.6947226524353027
+  },
+  {
+    "rank": 38,
+    "candidate_id": "CAND_0000044",
+    "score": 0.6945722103118896
+  },
+  {
+    "rank": 39,
+    "candidate_id": "CAND_0000014",
+    "score": 0.6943135261535645
+  },
+  {
+    "rank": 40,
+    "candidate_id": "CAND_0000047",
+    "score": 0.6937316656112671
+  },
+  {
+    "rank": 41,
+    "candidate_id": "CAND_0000043",
+    "score": 0.693626880645752
+  },
+  {
+    "rank": 42,
+    "candidate_id": "CAND_0000019",
+    "score": 0.6935385465621948
+  },
+  {
+    "rank": 43,
+    "candidate_id": "CAND_0000023",
+    "score": 0.6931471228599548
+  },
+  {
+    "rank": 44,
+    "candidate_id": "CAND_0000039",
+    "score": 0.6915126442909241
+  },
+  {
+    "rank": 45,
+    "candidate_id": "CAND_0000035",
+    "score": 0.6905337572097778
+  },
+  {
+    "rank": 46,
+    "candidate_id": "CAND_0000003",
+    "score": 0.6894553899765015
+  },
+  {
+    "rank": 47,
+    "candidate_id": "CAND_0000028",
+    "score": 0.6878618597984314
+  },
+  {
+    "rank": 48,
+    "candidate_id": "CAND_0000012",
+    "score": 0.6876133680343628
+  },
+  {
+    "rank": 49,
+    "candidate_id": "CAND_0000006",
+    "score": 0.6864510178565979
+  },
+  {
+    "rank": 50,
+    "candidate_id": "CAND_0000005",
+    "score": 0.6864438652992249
+  }
+]

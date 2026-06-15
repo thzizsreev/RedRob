@@ -32,9 +32,9 @@ def build_candidate_segments(record: dict) -> list[str]:
         context_prefix = f"{title} at {company}" if company else title
         segments.append(f"{context_prefix}: {description}")
 
-    skills = _skill_names(record.get("skills", []))
-    if skills:
-        segments.append(f"technical skills include: {', '.join(skills)}")
+    # skills = _skill_names(record.get("skills", []))
+    # if skills:
+    #     segments.append(f"technical skills include: {', '.join(skills)}")
 
     profile = record.get("profile", {})
     current_title = profile.get("current_title", record.get("current_title", "")).strip()
@@ -45,8 +45,8 @@ def build_candidate_segments(record: dict) -> list[str]:
     if summary:
         segments.append(f"professional summary: {summary}")
 
-    headline = profile.get("headline", "").strip()
-    if headline:
-        segments.append(f"headline: {headline}")
+    # headline = profile.get("headline", "").strip()
+    # if headline:
+    #     segments.append(f"headline: {headline}")
 
     return segments

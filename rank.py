@@ -1,123 +1,145 @@
 #!/usr/bin/env python3
 """
-Phase 2 — CPU-only retrieval script (5-minute budget).
+Phase 2 — CPU-only retrieval (5-minute budget).
 
-Loads precomputed FAISS index and runs block-weighted query retrieval.
+Loads precomputed flat vector index and runs block-weighted query retrieval.
 Downstream LightGBM ranking and CSV output can be layered on top.
 """
 
 from __future__ import annotations
 
-import argparse
 import json
-import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
-from pipeline.config import (
-    ARTIFACTS_DIR,
-    FAISS_EF_SEARCH,
-    MODEL_NAME,
-    QUERY_WEIGHTS,
-)
-from pipeline.query import build_query_vector
+from pipeline.config import ARTIFACTS_DIR, MODEL_NAME, QUERY_WEIGHTS
+from pipeline.query import build_query_vector, build_query_vector_from_text
 
 
-def _load_encoder(model_name: str, use_onnx: bool):
-    if use_onnx:
-        try:
-            from sentence_transformers import SentenceTransformer
+@dataclass(frozen=True)
+class RetrievalHit:
+    rank: int
+    candidate_id: str
+    score: float
 
-            print("Note: ONNX runtime path requested; falling back to sentence-transformers.")
-        except ImportError:
-            pass
 
-    from sentence_transformers import SentenceTransformer
-
+def load_encoder(model_name: str = MODEL_NAME) -> SentenceTransformer:
     return SentenceTransformer(model_name)
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run block-weighted FAISS retrieval.")
-    parser.add_argument(
-        "--artifacts-dir",
-        type=Path,
-        default=ARTIFACTS_DIR,
-        help="Directory containing candidate_index.faiss and id_map.json",
-    )
-    parser.add_argument(
-        "--k",
-        type=int,
-        default=300,
-        help="Number of candidates to retrieve",
-    )
-    parser.add_argument(
-        "--ef-search",
-        type=int,
-        default=FAISS_EF_SEARCH,
-        help="HNSW efSearch parameter",
-    )
-    parser.add_argument(
-        "--model",
-        default=MODEL_NAME,
-        help="Encoder model (must match precompute)",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=None,
-        help="Optional JSON file to write retrieval results",
-    )
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
-
-    index_path = args.artifacts_dir / "candidate_index.faiss"
-    id_map_path = args.artifacts_dir / "id_map.json"
+def load_index_and_id_map(
+    artifacts_dir: Path = ARTIFACTS_DIR,
+) -> tuple[faiss.Index, dict[int, str]]:
+    index_path = artifacts_dir / "candidate_index.faiss"
+    id_map_path = artifacts_dir / "id_map.json"
 
     if not index_path.exists():
-        print(f"Error: index not found: {index_path}", file=sys.stderr)
-        print("Run precompute.py first.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(
+            f"Index not found: {index_path}. Run precompute.py first."
+        )
     if not id_map_path.exists():
-        print(f"Error: id map not found: {id_map_path}", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(
+            f"ID map not found: {id_map_path}. Run precompute.py first."
+        )
 
-    print(f"Loading FAISS index from {index_path}")
     index = faiss.read_index(str(index_path))
-    index.hnsw.efSearch = args.ef_search
-
     with open(id_map_path, encoding="utf-8") as f:
         id_map = {int(k): v for k, v in json.load(f).items()}
+    return index, id_map
 
-    print(f"Loading encoder: {args.model}")
-    model = _load_encoder(args.model, use_onnx=True)
 
-    query_vector = build_query_vector(model, weights=QUERY_WEIGHTS)
-    query_matrix = query_vector.reshape(1, -1)
+def search_index(
+    index: faiss.Index,
+    query_vector: np.ndarray,
+    k: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    query_matrix = np.asarray(query_vector, dtype=np.float32).reshape(1, -1)
+    return index.search(query_matrix, k)
 
-    print(f"Searching top-{args.k} (efSearch={args.ef_search})...")
-    scores, indices = index.search(query_matrix, args.k)
 
-    results = []
+def hits_from_search(
+    scores: np.ndarray,
+    indices: np.ndarray,
+    id_map: dict[int, str],
+) -> list[RetrievalHit]:
+    results: list[RetrievalHit] = []
     for rank, (idx, score) in enumerate(zip(indices[0], scores[0]), start=1):
         if idx < 0:
             continue
         candidate_id = id_map.get(int(idx), f"UNKNOWN_{idx}")
-        results.append({"rank": rank, "candidate_id": candidate_id, "score": float(score)})
-        if rank <= 10:
-            print(f"  {rank:3d}. {candidate_id}  score={score:.4f}")
+        results.append(
+            RetrievalHit(rank=rank, candidate_id=candidate_id, score=float(score))
+        )
+    return results
 
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with open(args.output, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=2)
-        print(f"Wrote {len(results)} results to {args.output}")
 
+def retrieve(
+    k: int = 300,
+    *,
+    artifacts_dir: Path = ARTIFACTS_DIR,
+    model_name: str = MODEL_NAME,
+    weights: tuple[float, float, float] = QUERY_WEIGHTS,
+    model: SentenceTransformer | None = None,
+) -> list[RetrievalHit]:
+    """
+    Run block-weighted vector retrieval against the precomputed index.
+
+    Returns ranked hits with candidate_id and inner-product score.
+    """
+    index, id_map = load_index_and_id_map(artifacts_dir)
+
+    if model is None:
+        model = load_encoder(model_name)
+
+    query_vector = build_query_vector(model, weights=weights)
+    scores, indices = search_index(index, query_vector, k)
+    return hits_from_search(scores, indices, id_map)
+
+
+def retrieve_from_text(
+    query_text: str,
+    k: int = 10,
+    *,
+    artifacts_dir: Path = ARTIFACTS_DIR,
+    model_name: str = MODEL_NAME,
+    weights: tuple[float, float, float] = QUERY_WEIGHTS,
+    model: SentenceTransformer | None = None,
+) -> list[RetrievalHit]:
+    """Retrieve top-k candidates for a free-text query."""
+    index, id_map = load_index_and_id_map(artifacts_dir)
+
+    if model is None:
+        model = load_encoder(model_name)
+
+    query_vector = build_query_vector_from_text(model, query_text, weights=weights)
+    scores, indices = search_index(index, query_vector, k)
+    return hits_from_search(scores, indices, id_map)
+
+
+def write_results_json(results: list[RetrievalHit], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = [
+        {"rank": hit.rank, "candidate_id": hit.candidate_id, "score": hit.score}
+        for hit in results
+    ]
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+
+def main() -> list[RetrievalHit]:
+    output_path = ARTIFACTS_DIR / "retrieval_results.json"
+    results = retrieve(k=300)
+    write_results_json(results, output_path)
+
+    for hit in results[:10]:
+        print(f"  {hit.rank:3d}. {hit.candidate_id}  score={hit.score:.4f}")
     print(f"Retrieval complete: {len(results)} candidates returned.")
+    print(f"Wrote results to {output_path}")
+    return results
 
 
 if __name__ == "__main__":

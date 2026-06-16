@@ -2,8 +2,8 @@
 """
 Phase 2 — CPU-only retrieval (5-minute budget).
 
-Loads precomputed flat vector index and runs block-weighted query retrieval.
-Downstream LightGBM ranking and CSV output can be layered on top.
+Loads precomputed flat vector index and JD query vector.
+No torch, no INSTRUCTOR, no GPU — FAISS IndexFlatIP search only.
 """
 
 from __future__ import annotations
@@ -14,10 +14,15 @@ from pathlib import Path
 
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
-from pipeline.config import ARTIFACTS_DIR, MODEL_NAME, QUERY_WEIGHTS
-from pipeline.query import build_query_vector, build_query_vector_from_text
+from pipeline.config import (
+    ARTIFACTS_DIR,
+    BLOCK_DIM,
+    ID_MAP_FILENAME,
+    INDEX_FILENAME,
+    JD_QUERY_VEC_FILENAME,
+    QUERY_WEIGHTS,
+)
 
 
 @dataclass(frozen=True)
@@ -27,15 +32,11 @@ class RetrievalHit:
     score: float
 
 
-def load_encoder(model_name: str = MODEL_NAME) -> SentenceTransformer:
-    return SentenceTransformer(model_name)
-
-
 def load_index_and_id_map(
     artifacts_dir: Path = ARTIFACTS_DIR,
 ) -> tuple[faiss.Index, dict[int, str]]:
-    index_path = artifacts_dir / "candidate_index.faiss"
-    id_map_path = artifacts_dir / "id_map.json"
+    index_path = artifacts_dir / INDEX_FILENAME
+    id_map_path = artifacts_dir / ID_MAP_FILENAME
 
     if not index_path.exists():
         raise FileNotFoundError(
@@ -50,6 +51,34 @@ def load_index_and_id_map(
     with open(id_map_path, encoding="utf-8") as f:
         id_map = {int(k): v for k, v in json.load(f).items()}
     return index, id_map
+
+
+def load_jd_query_vector(artifacts_dir: Path = ARTIFACTS_DIR) -> np.ndarray:
+    query_path = artifacts_dir / JD_QUERY_VEC_FILENAME
+    if not query_path.exists():
+        raise FileNotFoundError(
+            f"JD query vector not found: {query_path}. Run precompute.py first."
+        )
+    vec = np.load(query_path).astype(np.float32)
+    if vec.shape != (BLOCK_DIM * 3,):
+        raise ValueError(f"Expected jd_query_vec shape ({BLOCK_DIM * 3},), got {vec.shape}")
+    return vec
+
+
+def apply_query_weights(
+    query_vector: np.ndarray,
+    weights: tuple[float, float, float] = QUERY_WEIGHTS,
+) -> np.ndarray:
+    """Re-scale query blocks at search time without re-encoding."""
+    w_r, w_i, w_e = weights
+    blocks = np.split(query_vector, 3)
+    base_weights = QUERY_WEIGHTS
+    scaled = [
+        blocks[0] * (w_r / base_weights[0]) if base_weights[0] else blocks[0],
+        blocks[1] * (w_i / base_weights[1]) if base_weights[1] else blocks[1],
+        blocks[2] * (w_e / base_weights[2]) if base_weights[2] else blocks[2],
+    ]
+    return np.concatenate(scaled).astype(np.float32)
 
 
 def search_index(
@@ -81,9 +110,7 @@ def retrieve(
     k: int = 300,
     *,
     artifacts_dir: Path = ARTIFACTS_DIR,
-    model_name: str = MODEL_NAME,
-    weights: tuple[float, float, float] = QUERY_WEIGHTS,
-    model: SentenceTransformer | None = None,
+    weights: tuple[float, float, float] | None = None,
 ) -> list[RetrievalHit]:
     """
     Run block-weighted vector retrieval against the precomputed index.
@@ -91,11 +118,11 @@ def retrieve(
     Returns ranked hits with candidate_id and inner-product score.
     """
     index, id_map = load_index_and_id_map(artifacts_dir)
+    query_vector = load_jd_query_vector(artifacts_dir)
 
-    if model is None:
-        model = load_encoder(model_name)
+    if weights is not None and weights != QUERY_WEIGHTS:
+        query_vector = apply_query_weights(query_vector, weights)
 
-    query_vector = build_query_vector(model, weights=weights)
     scores, indices = search_index(index, query_vector, k)
     return hits_from_search(scores, indices, id_map)
 
@@ -103,21 +130,13 @@ def retrieve(
 def retrieve_from_text(
     query_text: str,
     k: int = 10,
-    *,
-    artifacts_dir: Path = ARTIFACTS_DIR,
-    model_name: str = MODEL_NAME,
-    weights: tuple[float, float, float] = QUERY_WEIGHTS,
-    model: SentenceTransformer | None = None,
+    **kwargs,
 ) -> list[RetrievalHit]:
-    """Retrieve top-k candidates for a free-text query."""
-    index, id_map = load_index_and_id_map(artifacts_dir)
-
-    if model is None:
-        model = load_encoder(model_name)
-
-    query_vector = build_query_vector_from_text(model, query_text, weights=weights)
-    scores, indices = search_index(index, query_vector, k)
-    return hits_from_search(scores, indices, id_map)
+    """Online text encoding is not supported — JD query is precomputed in precompute.py."""
+    raise NotImplementedError(
+        "retrieve_from_text requires runtime INSTRUCTOR encoding. "
+        "Use retrieve() with the precomputed jd_query_vec.npy from precompute.py."
+    )
 
 
 def write_results_json(results: list[RetrievalHit], output_path: Path) -> None:

@@ -1,99 +1,82 @@
-"""Shared constants for the block-weighted vector encoding pipeline."""
+"""Shared constants for the INSTRUCTOR block-weighted vector encoding pipeline."""
 
+import os
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
-ANCHORS_DIR = ARTIFACTS_DIR / "anchors"
 
-MODEL_NAME = "BAAI/bge-small-en-v1.5"
-BLOCK_DIM = 384  # native BGE-small output dimension
-VECTOR_DIM = BLOCK_DIM * 3  # 1152-d concatenated candidate vector
+INSTRUCTOR_MODEL = "hkunlp/instructor-large"
+BLOCK_DIM = 768
+VECTOR_DIM = BLOCK_DIM * 3  # 2304-d concatenated candidate vector
 
-THRESHOLDS = {
-    "retrieval": 0.35,
-    "infra": 0.38,
-    "eval": 0.32,
-}
-
-MAX_TOKENS_PER_BLOCK = 380
+MAX_PASSAGE_TOKENS = 480
 EMPTY_BLOCK_TEXT = "no relevant experience"
 
-QUERY_WEIGHTS = (0.3, 0.6, 0.1)  # retrieval, infra, eval
+QUERY_WEIGHTS = (0.5, 0.3, 0.2)  # retrieval, infra, eval
 
-RETRIEVAL_ANCHOR_SENTENCES = [
-    "Built and deployed a hybrid retrieval system combining dense embeddings and BM25 for a production search product serving millions of users.",
-    "Designed semantic search pipelines using sentence transformers and approximate nearest neighbor indexes at a product company.",
-    "Owned end-to-end RAG pipeline from embedding generation to retrieval to LLM response synthesis in a live product.",
-    "Shipped embedding-based candidate matching system replacing keyword search, improving precision at a recruiting platform.",
-    "Managed embedding model versioning and index refresh pipelines to handle semantic drift in production retrieval.",
-    "Implemented cross-encoder re-ranking on top of bi-encoder retrieval to improve top-k precision in a real-world search system.",
-    "Built recommendation engine using vector similarity search on user and item embeddings deployed to production.",
-    "Designed retrieval layer for a conversational AI product using FAISS with real-time document ingestion.",
-    "Developed dense passage retrieval system using BGE and E5 embeddings for an enterprise knowledge base.",
-    "Replaced TF-IDF search with dense retrieval and saw measurable improvement in recruiter engagement metrics.",
-    "Built document retrieval system handling cold-start and embedding drift for a live SaaS product.",
-    "Shipped neural information retrieval system using bi-encoders, maintaining index freshness under continuous data ingestion.",
-]
-
-INFRA_ANCHOR_SENTENCES = [
-    "Scaled FAISS HNSW index to tens of millions of vectors while maintaining sub-100ms P99 query latency in production.",
-    "Operated Qdrant vector database in production with real-time index updates, replication, and zero-downtime deploys.",
-    "Optimized embedding inference throughput using ONNX Runtime, reducing latency by 60% compared to PyTorch baseline.",
-    "Designed and maintained Pinecone index serving live search traffic with automated dimension management and namespace isolation.",
-    "Built distributed vector search infrastructure on Weaviate with horizontal scaling across multiple nodes.",
-    "Managed Milvus cluster for a high-throughput recommendation system, handling index partitioning and memory optimization.",
-    "Reduced vector search latency from 800ms to 40ms by switching from flat index to HNSW with tuned ef_search parameters.",
-    "Implemented batched embedding generation pipeline with async queuing to handle spiky ingestion workloads.",
-    "Deployed OpenSearch with k-NN plugin as hybrid search backend, handling both keyword and vector queries in one system.",
-    "Ran capacity planning and cost optimization for a vector database serving 200K daily active users.",
-    "Built monitoring and alerting for retrieval system degradation including embedding drift detection and query latency SLOs.",
-    "Designed index segmentation strategy for multi-tenant vector search with strict data isolation requirements.",
-]
-
-
-EVAL_ANCHOR_SENTENCES = [
-    "Designed offline evaluation framework using NDCG@10 and MAP to benchmark retrieval quality before production deploys.",
-    "Built A/B testing infrastructure for ranking system changes and interpreted statistical significance of online experiment results.",
-    "Established correlation between offline NDCG benchmarks and online recruiter engagement metrics to validate evaluation methodology.",
-    "Implemented feedback loop collecting recruiter click and save signals to continuously improve ranking model quality.",
-    "Designed human relevance labeling pipeline and computed inter-annotator agreement to build reliable evaluation datasets.",
-    "Ran learning-to-rank experiments using XGBoost with NDCG@10 as the training objective on collected implicit feedback.",
-    "Built evaluation harness for RAG system measuring retrieval recall and generation faithfulness using automated metrics.",
-    "Tracked MRR and P@K metrics across model versions using a reproducible benchmark suite tied to CI/CD pipeline.",
-    "Designed holdout evaluation set for candidate ranking system and measured precision degradation over time as embedding drift occurred.",
-    "Interpreted A/B test results for ranking changes accounting for novelty effects and position bias in click data.",
-    "Built dashboard tracking online and offline ranking metrics to detect model decay and trigger retraining.",
-    "Wrote evaluation framework distinguishing between retrieval failures and re-ranking failures to isolate system improvement levers.",
-]
-
-QUERY_RETRIEVAL_TEXT = (
-    "query: production embeddings retrieval semantic search RAG "
-    "vector database experience shipped to real users at scale"
+RETRIEVAL_INSTRUCTION = (
+    "Represent the AI engineering career history for retrieving candidates "
+    "with production experience in semantic search, embeddings-based retrieval, "
+    "hybrid search systems, and ranking pipelines:"
 )
 
-QUERY_INFRA_TEXT = (
-    "query: deploying scaling vector database production latency "
-    "optimization inference throughput operational experience"
+INFRA_INSTRUCTION = (
+    "Represent the AI engineering career history for retrieving candidates "
+    "with production experience deploying and scaling ML systems, vector databases, "
+    "inference optimization, and MLOps infrastructure:"
 )
 
-QUERY_EVAL_TEXT = (
-    "query: NDCG MRR MAP evaluation framework ranking A/B testing "
-    "offline benchmark online experiment design feedback loop"
+EVAL_INSTRUCTION = (
+    "Represent the AI engineering career history for retrieving candidates "
+    "who have designed evaluation frameworks for ranking systems, run A/B tests, "
+    "measured NDCG, MRR, MAP, and built offline-to-online feedback loops:"
 )
+
+INSTRUCTIONS = {
+    "retrieval": RETRIEVAL_INSTRUCTION,
+    "infra": INFRA_INSTRUCTION,
+    "eval": EVAL_INSTRUCTION,
+}
+
+JD_RETRIEVAL_TEXT = (
+    "Production experience with embeddings-based retrieval systems deployed to real users. "
+    "Handling embedding drift, index refresh, retrieval-quality regression in production. "
+    "Production experience with vector databases or hybrid search infrastructure. "
+    "Shipped at least one end-to-end ranking or search or recommendation system."
+)
+
+JD_INFRA_TEXT = (
+    "Vector database scaling, FAISS, latency optimization, throughput, production deployment. "
+    "Background in distributed systems or large-scale inference optimization. "
+    "Deploy and maintain machine learning systems on cloud infrastructure."
+)
+
+JD_EVAL_TEXT = (
+    "Hands-on experience designing evaluation frameworks for ranking systems. "
+    "NDCG, MRR, MAP, offline-to-online correlation, A/B test interpretation. "
+    "Evaluation infrastructure, offline benchmarks, online A/B testing, recruiter feedback loops."
+)
+
+JD_QUERY_VEC_FILENAME = "jd_query_vec.npy"
+INDEX_FILENAME = "candidate_index.faiss"
+ID_MAP_FILENAME = "id_map.json"
+
+INSTRUCTOR_BATCH_SIZE = 32
+INSTRUCTOR_BATCH_SIZE_CPU = 8
+INSTRUCTOR_VRAM_GB_ESTIMATE = 3.2
+ENCODE_DEVICE = "auto"  # "auto" | "cuda" | "cpu" — precompute only
 
 INDEX_BATCH_SIZE = 500
-SENTENCE_ENCODE_BATCH_SIZE = 64
-GPU_ENCODE_BATCH_SIZE = 128
-ENCODE_DEVICE = "auto"  # "auto" | "cuda" | "cpu"
-
-# Parallel precompute tuning (see pipeline/parallel.py)
-MAX_PRECOMPUTE_WORKERS = 8
-MODEL_RAM_GB_ESTIMATE = 0.45
-PRECOMPUTE_RAM_RESERVE_GB = 4.0
-PRECOMPUTE_WORKERS: int | None = None  # None = auto from CPU/RAM
+PASSAGE_PREP_WORKERS: int | None = None  # None = min(8, cpu_count - 1)
 
 DEFAULT_CANDIDATES_PATH = DATA_DIR / "candidates.jsonl.gz"
 CANDIDATES_JSONL_PATH = DATA_DIR / "candidates.jsonl"
 SAMPLE_CANDIDATES_PATH = DATA_DIR / "sample_candidates.json"
+
+
+def resolve_passage_prep_workers() -> int:
+    if PASSAGE_PREP_WORKERS is not None:
+        return max(1, PASSAGE_PREP_WORKERS)
+    return max(1, min(8, (os.cpu_count() or 4) - 1))

@@ -1,4 +1,4 @@
-"""Stage 8: Batch processing and flat vector index construction."""
+"""Batch processing and flat FAISS index construction with INSTRUCTOR-large."""
 
 from __future__ import annotations
 
@@ -10,12 +10,26 @@ from pathlib import Path
 
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
-from pipeline.candidate import process_one_candidate
-from pipeline.config import INDEX_BATCH_SIZE, MODEL_NAME
-from pipeline.model_utils import embedding_dim, resolve_device
-from pipeline.parallel import encode_candidate_task, resolve_workers
+from pipeline.config import (
+    EMPTY_BLOCK_TEXT,
+    ID_MAP_FILENAME,
+    INDEX_BATCH_SIZE,
+    INDEX_FILENAME,
+    JD_QUERY_VEC_FILENAME,
+    MAX_PASSAGE_TOKENS,
+    VECTOR_DIM,
+    resolve_passage_prep_workers,
+)
+from pipeline.extraction import build_candidate_passage, truncate_passage
+from pipeline.instructor_encode import (
+    INSTRUCTOR,
+    batch_size_for_device,
+    build_jd_query_vector,
+    encode_candidates,
+    load_tokenizer,
+    log_encode_plan,
+)
 
 
 def _open_candidates(path: Path):
@@ -41,89 +55,54 @@ def iter_candidates_from_path(path: Path) -> Iterable[dict]:
                 yield json.loads(line)
 
 
-def _encode_sequential(
-    indexed_records: list[tuple[int, dict]],
-    model: SentenceTransformer,
-    anchors: dict[str, np.ndarray],
-    thresholds: dict[str, float],
-) -> list[tuple[int, str, np.ndarray]]:
-    results: list[tuple[int, str, np.ndarray]] = []
-    for idx, record in indexed_records:
-        candidate_id, vec = process_one_candidate(record, model, anchors, thresholds)
-        results.append((idx, candidate_id, vec))
-        if (idx + 1) % 5000 == 0:
-            print(f"  processed {idx + 1:,} candidates")
-    return results
+def _prepare_passage(record: dict, tokenizer) -> str:
+    passage = build_candidate_passage(record)
+    if not passage.strip():
+        return EMPTY_BLOCK_TEXT
+    return truncate_passage(passage, tokenizer, MAX_PASSAGE_TOKENS)
 
 
-def _encode_parallel(
-    indexed_records: list[tuple[int, dict]],
-    anchors: dict[str, np.ndarray],
-    thresholds: dict[str, float],
+def _prepare_passages_parallel(
+    records: list[dict],
+    tokenizer,
     workers: int,
-    model_name: str = MODEL_NAME,
-) -> list[tuple[int, str, np.ndarray]]:
-    tasks = [
-        (idx, record, anchors, thresholds, model_name)
-        for idx, record in indexed_records
-    ]
-    results: list[tuple[int, str, np.ndarray]] = []
+) -> list[str]:
+    if workers <= 1 or len(records) <= 1:
+        return [_prepare_passage(r, tokenizer) for r in records]
+
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        for idx, candidate_id, vec in executor.map(encode_candidate_task, tasks):
-            results.append((idx, candidate_id, vec))
-            if (idx + 1) % 5000 == 0:
-                print(f"  processed {idx + 1:,} candidates")
-    results.sort(key=lambda item: item[0])
-    return results
+        return list(
+            executor.map(lambda r: _prepare_passage(r, tokenizer), records)
+        )
 
 
-def _add_results_to_index(
-    results: list[tuple[int, str, np.ndarray]],
+def _add_vectors_to_index(
+    vectors: np.ndarray,
     index: faiss.Index,
     batch_size: int,
-) -> dict[int, str]:
-    id_map: dict[int, str] = {}
-    current_batch: list[np.ndarray] = []
-
-    def flush_batch() -> None:
-        nonlocal current_batch
-        if not current_batch:
-            return
-        arr = np.array(current_batch, dtype=np.float32)
-        index.add(arr)
-        current_batch = []
-
-    for faiss_id, candidate_id, vec in results:
-        id_map[faiss_id] = candidate_id
-        current_batch.append(vec)
-        if len(current_batch) >= batch_size:
-            flush_batch()
-
-    flush_batch()
-    return id_map
+) -> None:
+    for start in range(0, len(vectors), batch_size):
+        batch = vectors[start : start + batch_size].astype(np.float32)
+        index.add(batch)
 
 
 def build_vector_index_from_records(
     records: Iterable[dict],
-    model: SentenceTransformer,
-    anchors: dict[str, np.ndarray],
-    thresholds: dict[str, float],
+    model: INSTRUCTOR,
     output_dir: Path,
     *,
+    device: str,
     limit: int | None = None,
-    batch_size: int = INDEX_BATCH_SIZE,
-    workers: int | None = None,
-) -> tuple[faiss.Index, dict[int, str]]:
+    index_batch_size: int = INDEX_BATCH_SIZE,
+    batch_size: int | None = None,
+    passage_workers: int | None = None,
+) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
     """
-    Encode candidate records and build a flat FAISS index (O(N) exhaustive search).
+    Encode candidates with INSTRUCTOR-large and build a flat FAISS index.
 
-    The model is used for sequential mode (workers=1) only; parallel workers load
-    thread-local models via pipeline.parallel.
+    Returns (index, id_map, jd_query_vector).
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-    dim = embedding_dim(model) * 3
-    worker_count = resolve_workers(workers)
-    device = resolve_device()
 
     indexed_records: list[tuple[int, dict]] = []
     for idx, record in enumerate(records):
@@ -131,55 +110,69 @@ def build_vector_index_from_records(
             break
         indexed_records.append((idx, record))
 
-    print(
-        f"Encoding {len(indexed_records):,} candidates with {worker_count} worker(s) "
-        f"on {device}..."
-    )
+    if not indexed_records:
+        raise ValueError("No candidate records to process")
 
-    if worker_count == 1:
-        encoded = _encode_sequential(indexed_records, model, anchors, thresholds)
-    else:
-        encoded = _encode_parallel(
-            indexed_records, anchors, thresholds, worker_count, MODEL_NAME
-        )
+    encode_batch_size = batch_size_for_device(device, batch_size)
+    prep_workers = passage_workers if passage_workers is not None else resolve_passage_prep_workers()
 
-    index = faiss.IndexFlatIP(dim)
-    id_map = _add_results_to_index(encoded, index, batch_size)
+    log_encode_plan(device, encode_batch_size, len(indexed_records), prep_workers)
 
-    index_path = output_dir / "candidate_index.faiss"
-    id_map_path = output_dir / "id_map.json"
+    tokenizer = load_tokenizer()
+    record_list = [r for _, r in indexed_records]
+    print(f"Building passages for {len(record_list):,} candidates...")
+    passages = _prepare_passages_parallel(record_list, tokenizer, prep_workers)
+
+    print("Encoding candidates (3 instruction passes)...")
+    vectors = encode_candidates(model, passages, batch_size=encode_batch_size)
+
+    print("Building JD query vector...")
+    jd_query_vec = build_jd_query_vector(model)
+
+    id_map: dict[int, str] = {}
+    for faiss_id, (idx, record) in enumerate(indexed_records):
+        id_map[faiss_id] = record["candidate_id"]
+
+    index = faiss.IndexFlatIP(VECTOR_DIM)
+    _add_vectors_to_index(vectors, index, index_batch_size)
+
+    index_path = output_dir / INDEX_FILENAME
+    id_map_path = output_dir / ID_MAP_FILENAME
+    jd_query_path = output_dir / JD_QUERY_VEC_FILENAME
 
     faiss.write_index(index, str(index_path))
     with open(id_map_path, "w", encoding="utf-8") as f:
         json.dump({str(k): v for k, v in id_map.items()}, f)
+    np.save(jd_query_path, jd_query_vec)
 
-    print(f"Index built: {index.ntotal:,} vectors, dim={dim}")
+    print(f"Index built: {index.ntotal:,} vectors, dim={VECTOR_DIM}")
     print(f"Saved {index_path}")
     print(f"Saved {id_map_path}")
+    print(f"Saved {jd_query_path}")
 
-    return index, id_map
+    return index, id_map, jd_query_vec
 
 
 def build_vector_index(
     candidates_path: Path,
-    model: SentenceTransformer,
-    anchors: dict[str, np.ndarray],
-    thresholds: dict[str, float],
+    model: INSTRUCTOR,
     output_dir: Path,
     *,
+    device: str,
     limit: int | None = None,
-    batch_size: int = INDEX_BATCH_SIZE,
-    workers: int | None = None,
-) -> tuple[faiss.Index, dict[int, str]]:
+    index_batch_size: int = INDEX_BATCH_SIZE,
+    batch_size: int | None = None,
+    passage_workers: int | None = None,
+) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
     """Stream candidates from a file, encode vectors, build flat FAISS index."""
     print(f"Processing candidates from {candidates_path}...")
     return build_vector_index_from_records(
         iter_candidates_from_path(candidates_path),
         model,
-        anchors,
-        thresholds,
         output_dir,
+        device=device,
         limit=limit,
+        index_batch_size=index_batch_size,
         batch_size=batch_size,
-        workers=workers,
+        passage_workers=passage_workers,
     )

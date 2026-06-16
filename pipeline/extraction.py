@@ -50,3 +50,21 @@ def build_candidate_segments(record: dict) -> list[str]:
     #     segments.append(f"headline: {headline}")
 
     return segments
+
+
+def build_candidate_passage(record: dict) -> str:
+    """Join role-contextualized segments into a single passage for INSTRUCTOR encoding."""
+    segments = build_candidate_segments(record)
+    if not segments:
+        return ""
+    return " ".join(segments)
+
+
+def truncate_passage(text: str, tokenizer, max_tokens: int = 480) -> str:
+    """Truncate from the end to preserve leading (most relevant) content."""
+    if not text.strip():
+        return text
+    tokens = tokenizer.encode(text)
+    if len(tokens) <= max_tokens:
+        return text
+    return tokenizer.decode(tokens[:max_tokens], skip_special_tokens=True)

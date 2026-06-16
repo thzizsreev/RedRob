@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple retrieval test — search the index with a query string.
+Simple retrieval test — search the index with the precomputed JD query vector.
 
 Run from project root (after precompute.py):
     python test/retrieval_test.py
@@ -16,12 +16,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from pipeline.config import SAMPLE_CANDIDATES_PATH
-from rank import retrieve_from_text
+from rank import retrieve
 
-# --- edit these ---
-QUERY = "production embedding retrieval FAISS vector database ranking"
 TOP_K = 10
-# ------------------
 
 
 def load_candidate_lookup(path: Path = SAMPLE_CANDIDATES_PATH) -> dict[str, dict]:
@@ -32,9 +29,9 @@ def load_candidate_lookup(path: Path = SAMPLE_CANDIDATES_PATH) -> dict[str, dict
 
 def main() -> None:
     candidates = load_candidate_lookup()
-    results = retrieve_from_text(QUERY, k=TOP_K)
+    results = retrieve(k=TOP_K)
 
-    print(f'Query: "{QUERY}"\n')
+    print("Query: precomputed JD query vector (jd_query_vec.npy)\n")
     print(f"{'Rank':<5} {'Score':>8}  {'Candidate ID':<14}  Title")
     print("-" * 70)
 

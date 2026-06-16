@@ -1,7 +1,9 @@
-# Offline precompute (vector encoding pipeline)
+# Offline precompute (INSTRUCTOR-large vector encoding — GPU allowed in precompute.py only)
 # Install torch with CUDA separately, e.g.:
 #   pip install torch --index-url https://download.pytorch.org/whl/cu124
-sentence-transformers>=2.6.0
+InstructorEmbedding>=1.0.1
+sentence-transformers>=2.7.0,<3.0.0
+transformers>=4.20.0,<5.0.0
 faiss-cpu>=1.7.4
 numpy>=1.24.0
 psutil>=5.9.0

@@ -1,0 +1,57 @@
+components:
+  technical: 0.45
+  career: 0.25
+  behavioral: 0.20
+  logistics: 0.10
+
+technical:
+  career_evidence_weight: 0.70
+  skills_evidence_weight: 0.30
+  tier_a_weight: 3.0
+  tier_b_weight: 1.5
+  tier_c_weight: 0.5
+  tier_c_cap_without_tier_a: 15.0
+  production_multiplier: 1.5
+  plain_language_weight: 2.0
+  max_score: 100.0
+
+career:
+  ideal_years_min: 5.0
+  ideal_years_max: 9.0
+  years_peak_score: 30.0
+  title_match_score: 25.0
+  hands_on_score: 20.0
+  product_company_bonus: 15.0
+  consulting_penalty: 15.0
+  non_technical_title_penalty: 40.0
+  max_score: 100.0
+
+behavioral:
+  open_to_work: 15.0
+  activity_recency: 20.0
+  response_rate: 20.0
+  response_time: 15.0
+  interview_completion: 10.0
+  github_activity: 10.0
+  recruiter_saves: 5.0
+  verification: 5.0
+  max_score: 100.0
+
+logistics:
+  notice_period: 40.0
+  relocation: 30.0
+  work_mode: 30.0
+  max_score: 100.0
+
+risk:
+  max_penalty: 40.0
+  salary_inconsistency: 15.0
+  keyword_stuffing: 20.0
+  title_skill_mismatch: 25.0
+  low_completeness_buzzwords: 10.0
+  unrealistic_skill_duration: 10.0
+  low_assessments: 5.0
+  honeypot_heuristic: 30.0
+
+behavioral_rescue:
+  min_technical: 20.0

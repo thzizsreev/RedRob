@@ -1,0 +1,188 @@
+# Senior AI Engineer — Founding Team JD terms
+
+tier_a_retrieval:
+  - embeddings
+  - vector search
+  - dense retrieval
+  - hybrid retrieval
+  - sparse retrieval
+  - semantic search
+  - information retrieval
+  - retrieval system
+  - retrieval pipeline
+  - ranking system
+  - ranking model
+  - learning to rank
+  - recommendation system
+  - recommendation engine
+  - search relevance
+  - search ranking
+  - cross-encoder
+  - reranking
+  - llm reranking
+  - rag
+  - bm25
+  - faiss
+  - pinecone
+  - qdrant
+  - weaviate
+  - milvus
+  - opensearch
+  - elasticsearch
+  - vector database
+  - vector db
+  - ndcg
+  - mrr
+  - map
+  - recall@k
+  - embedding drift
+  - index refresh
+
+tier_b_engineering:
+  - python
+  - pytorch
+  - tensorflow
+  - sentence-transformers
+  - sentence transformers
+  - bge
+  - e5
+  - fine-tuning
+  - fine tuning
+  - llm
+  - large language model
+  - a/b test
+  - ab test
+  - production ml
+  - ml platform
+  - ml pipeline
+  - model serving
+  - inference optimization
+  - distributed systems
+  - backend engineer
+  - ml engineer
+  - applied scientist
+
+tier_c_limited:
+  - nlp
+  - natural language processing
+  - computer vision
+  - speech recognition
+  - image classification
+  - tts
+  - text-to-speech
+
+must_have_core:
+  - python
+
+nice_to_have:
+  - langchain
+  - llamaindex
+  - huggingface
+  - transformers
+  - lora
+  - rlhf
+  - dpo
+  - onnx
+  - kubernetes
+  - docker
+  - spark
+  - kafka
+
+engineering_titles:
+  - ai engineer
+  - ml engineer
+  - machine learning engineer
+  - search engineer
+  - recommendation engineer
+  - applied ml engineer
+  - applied scientist
+  - software engineer
+  - backend engineer
+  - platform engineer
+  - data scientist
+  - research engineer
+  - nlp engineer
+  - senior engineer
+  - staff engineer
+  - principal engineer
+  - founding engineer
+
+disqualifier_titles:
+  - marketing manager
+  - marketing executive
+  - hr manager
+  - human resources
+  - recruiter
+  - sales executive
+  - sales manager
+  - accountant
+  - graphic designer
+  - content writer
+  - copywriter
+  - project manager
+  - product manager
+  - business analyst
+  - operations manager
+  - office manager
+  - administrative assistant
+
+production_phrases:
+  - production
+  - deployed
+  - shipped
+  - at scale
+  - real users
+  - end-to-end
+  - owned
+  - built and deployed
+  - in production
+  - production system
+  - production environment
+  - live system
+  - serving users
+
+hands_on_phrases:
+  - built
+  - designed
+  - implemented
+  - architected
+  - owned
+  - led development
+  - hands-on
+  - wrote
+  - developed
+
+buzzword_only:
+  - chatgpt user
+  - ai enthusiast
+  - langchain tutorial
+  - prompt engineer only
+  - ai curious
+  - exploring ai
+
+consulting_indicators:
+  - it services
+  - consulting
+  - outsourcing
+  - staff augmentation
+  - body shop
+
+product_company_sizes:
+  - 51-200
+  - 201-500
+  - 501-1000
+  - 1001-5000
+  - 5001-10000
+  - 10001+
+
+plain_language_production:
+  - recommendation systems
+  - search relevance
+  - ranking model
+  - retrieval quality
+  - semantic matching
+  - candidate matching
+  - talent matching
+  - relevance scoring
+  - personalized search
+  - feed ranking

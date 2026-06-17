@@ -1,123 +1,119 @@
 #!/usr/bin/env python3
 """
-Phase 2 — CPU-only retrieval script (5-minute budget).
+Rule-based candidate ranking for RedRob hackathon.
 
-Loads precomputed FAISS index and runs block-weighted query retrieval.
-Downstream LightGBM ranking and CSV output can be layered on top.
+Loads candidates, scores across technical/career/behavioral/logistics dimensions,
+applies risk penalties, and writes a top-100 submission CSV.
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import sys
+import time
 from pathlib import Path
 
-import faiss
-
-from pipeline.config import (
-    ARTIFACTS_DIR,
-    FAISS_EF_SEARCH,
-    MODEL_NAME,
-    QUERY_WEIGHTS,
-)
-from pipeline.query import build_query_vector
-
-
-def _load_encoder(model_name: str, use_onnx: bool):
-    if use_onnx:
-        try:
-            from sentence_transformers import SentenceTransformer
-
-            print("Note: ONNX runtime path requested; falling back to sentence-transformers.")
-        except ImportError:
-            pass
-
-    from sentence_transformers import SentenceTransformer
-
-    return SentenceTransformer(model_name)
+from src.data_loader import load_candidates
+from src.feature_extraction import extract_features
+from src.normalizer import normalize_candidate
+from src.output_writer import RankedCandidate, write_submission_csv
+from src.reasoning import generate_reasoning
+from src.risk_detection import compute_risk_penalty
+from src.scoring import compute_final_score
+from src.utils import DEFAULT_CONFIG_DIR, load_config
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run block-weighted FAISS retrieval.")
+    parser = argparse.ArgumentParser(
+        description="Rank candidates for Senior AI Engineer role (rule-based, offline)."
+    )
     parser.add_argument(
-        "--artifacts-dir",
+        "--input",
         type=Path,
-        default=ARTIFACTS_DIR,
-        help="Directory containing candidate_index.faiss and id_map.json",
-    )
-    parser.add_argument(
-        "--k",
-        type=int,
-        default=300,
-        help="Number of candidates to retrieve",
-    )
-    parser.add_argument(
-        "--ef-search",
-        type=int,
-        default=FAISS_EF_SEARCH,
-        help="HNSW efSearch parameter",
-    )
-    parser.add_argument(
-        "--model",
-        default=MODEL_NAME,
-        help="Encoder model (must match precompute)",
+        default=Path("data/candidates.jsonl.gz"),
+        help="Path to candidates.jsonl, .jsonl.gz, or .json array",
     )
     parser.add_argument(
         "--output",
         type=Path,
+        default=Path("outputs/submission.csv"),
+        help="Output CSV path",
+    )
+    parser.add_argument(
+        "--config-dir",
+        type=Path,
+        default=DEFAULT_CONFIG_DIR,
+        help="Directory containing jd_terms.yaml and scoring_weights.yaml",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
         default=None,
-        help="Optional JSON file to write retrieval results",
+        help="Process only first N candidates (for testing)",
+    )
+    parser.add_argument(
+        "--top-n",
+        type=int,
+        default=100,
+        help="Number of candidates to include in output",
     )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    start = time.perf_counter()
 
-    index_path = args.artifacts_dir / "candidate_index.faiss"
-    id_map_path = args.artifacts_dir / "id_map.json"
-
-    if not index_path.exists():
-        print(f"Error: index not found: {index_path}", file=sys.stderr)
-        print("Run precompute.py first.", file=sys.stderr)
-        sys.exit(1)
-    if not id_map_path.exists():
-        print(f"Error: id map not found: {id_map_path}", file=sys.stderr)
+    if not args.input.exists():
+        print(f"Error: input file not found: {args.input}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Loading FAISS index from {index_path}")
-    index = faiss.read_index(str(index_path))
-    index.hnsw.efSearch = args.ef_search
+    jd_terms, weights = load_config(args.config_dir)
+    ranked: list[RankedCandidate] = []
+    processed = 0
 
-    with open(id_map_path, encoding="utf-8") as f:
-        id_map = {int(k): v for k, v in json.load(f).items()}
+    print(f"Loading candidates from {args.input}...")
+    for raw in load_candidates(args.input, limit=args.limit):
+        candidate = normalize_candidate(raw)
+        features = extract_features(candidate, jd_terms)
+        risk_penalty, risk_flags = compute_risk_penalty(
+            features, candidate, weights
+        )
+        features.risk_flags = risk_flags
 
-    print(f"Loading encoder: {args.model}")
-    model = _load_encoder(args.model, use_onnx=True)
+        scores = compute_final_score(
+            features, candidate, jd_terms, weights, risk_penalty
+        )
+        reasoning = generate_reasoning(candidate, features, scores)
 
-    query_vector = build_query_vector(model, weights=QUERY_WEIGHTS)
-    query_matrix = query_vector.reshape(1, -1)
+        ranked.append(
+            RankedCandidate(
+                candidate_id=candidate.candidate_id,
+                score=scores.final_score,
+                reasoning=reasoning,
+            )
+        )
+        processed += 1
+        if processed % 10000 == 0:
+            print(f"  scored {processed:,} candidates...")
 
-    print(f"Searching top-{args.k} (efSearch={args.ef_search})...")
-    scores, indices = index.search(query_matrix, args.k)
+    if not ranked:
+        print("Error: no candidates processed.", file=sys.stderr)
+        sys.exit(1)
 
-    results = []
-    for rank, (idx, score) in enumerate(zip(indices[0], scores[0]), start=1):
-        if idx < 0:
-            continue
-        candidate_id = id_map.get(int(idx), f"UNKNOWN_{idx}")
-        results.append({"rank": rank, "candidate_id": candidate_id, "score": float(score)})
-        if rank <= 10:
-            print(f"  {rank:3d}. {candidate_id}  score={score:.4f}")
+    top_n = min(args.top_n, len(ranked))
+    if top_n < args.top_n:
+        print(
+            f"Warning: only {len(ranked)} candidates available; "
+            f"outputting top {top_n}.",
+            file=sys.stderr,
+        )
 
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with open(args.output, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=2)
-        print(f"Wrote {len(results)} results to {args.output}")
+    write_submission_csv(ranked, args.output, top_n=top_n)
 
-    print(f"Retrieval complete: {len(results)} candidates returned.")
+    elapsed = time.perf_counter() - start
+    print(f"Ranked {processed:,} candidates in {elapsed:.1f}s")
+    print(f"Wrote top {top_n} to {args.output}")
 
 
 if __name__ == "__main__":

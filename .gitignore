@@ -9,19 +9,20 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
-# Large candidate datasets (download separately; exceeds GitHub limits)
+# Large candidate datasets (download separately; sample JSONs backed up locally)
 data/candidates.jsonl
 data/candidates.jsonl.gz
-data/sample2.json
-data/sample5k.json
-data/sample10k.json
+data/sample*.json
+!data/sample_candidates.json
 
-# Generated pipeline artifacts (rebuild with precompute.py / rank.py)
+# Precompute + rank outputs (rebuild with precompute.py / rank.py; backed up locally)
+# Per-sample dirs: artifacts/sample1k/, sample5k/, sample10k/, sample20k/, ...
 artifacts/*
 !artifacts/.gitkeep
 artifacts/**
 !artifacts/**/
 !artifacts/**/.gitkeep
+artifacts/anchors/*.npy
 
 # INSTRUCTOR ONNX export output (regenerate: cd onnx && python export_to_onnx.py)
 onnx/models/**
@@ -43,3 +44,8 @@ naivee/artifacts/**
 # Install / run logs
 torch_install.log
 *.log
+
+# Clustering + retrieval test outputs (test/run_clustering_test.py, rank.py)
+test_output/**
+!test_output/
+!test_output/.gitkeep

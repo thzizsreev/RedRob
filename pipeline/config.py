@@ -82,9 +82,11 @@ PASSAGE_PREP_WORKERS: int | None = None  # None = min(8, cpu_count - 1)
 DEFAULT_CANDIDATES_PATH = DATA_DIR / "candidates.jsonl.gz"
 CANDIDATES_JSONL_PATH = DATA_DIR / "candidates.jsonl"
 SAMPLE_CANDIDATES_PATH = DATA_DIR / "sample_candidates.json"
+SAMPLE1K_PATH = DATA_DIR / "sample1k.json"
 SAMPLE2_PATH = DATA_DIR / "sample2.json"
 SAMPLE5K_PATH = DATA_DIR / "sample5k.json"
 SAMPLE10K_PATH = DATA_DIR / "sample10k.json"
+SAMPLE20K_PATH = DATA_DIR / "sample20k.json"
 
 
 def resolve_passage_prep_workers() -> int:

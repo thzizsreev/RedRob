@@ -25,8 +25,8 @@ from pipeline.config import (
 )
 
 # --- edit before run ---
-ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "sample2"
-RESULTS_PATH = ARTIFACTS_PATH / "retrieval_results.json"
+ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "sample1k"
+RESULTS_PATH = ROOT_DIR / "test_output" / "retrieval" / "retrieval_results_sample1k.json"
 
 
 @dataclass(frozen=True)

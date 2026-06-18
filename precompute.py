@@ -20,14 +20,14 @@ from pipeline.config import (
     CANDIDATES_JSONL_PATH,
     SAMPLE_CANDIDATES_PATH,
     ROOT_DIR,
-    SAMPLE2_PATH,
+    SAMPLE1K_PATH
 )
 from pipeline.index import build_vector_index, build_vector_index_from_records
 from pipeline.instructor_onnx import load_embedder, unload_embedder
 
 # --- edit before run ---
-CANDIDATES_PATH = SAMPLE2_PATH
-OUTPUT_DIR = ROOT_DIR / "artifacts" / "sample2"
+CANDIDATES_PATH = SAMPLE1K_PATH
+OUTPUT_DIR = ROOT_DIR / "artifacts" / "sample1k"
 
 
 def load_candidates_json(path: Path) -> list[dict]:

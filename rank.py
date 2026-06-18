@@ -16,13 +16,17 @@ import faiss
 import numpy as np
 
 from pipeline.config import (
-    ARTIFACTS_DIR,
     BLOCK_DIM,
     ID_MAP_FILENAME,
     INDEX_FILENAME,
     JD_QUERY_VEC_FILENAME,
     QUERY_WEIGHTS,
+    ROOT_DIR,
 )
+
+# --- edit before run ---
+ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "sample2"
+RESULTS_PATH = ARTIFACTS_PATH / "retrieval_results.json"
 
 
 @dataclass(frozen=True)
@@ -33,7 +37,7 @@ class RetrievalHit:
 
 
 def load_index_and_id_map(
-    artifacts_dir: Path = ARTIFACTS_DIR,
+    artifacts_dir: Path = ARTIFACTS_PATH,
 ) -> tuple[faiss.Index, dict[int, str]]:
     index_path = artifacts_dir / INDEX_FILENAME
     id_map_path = artifacts_dir / ID_MAP_FILENAME
@@ -53,7 +57,7 @@ def load_index_and_id_map(
     return index, id_map
 
 
-def load_jd_query_vector(artifacts_dir: Path = ARTIFACTS_DIR) -> np.ndarray:
+def load_jd_query_vector(artifacts_dir: Path = ARTIFACTS_PATH) -> np.ndarray:
     query_path = artifacts_dir / JD_QUERY_VEC_FILENAME
     if not query_path.exists():
         raise FileNotFoundError(
@@ -109,7 +113,7 @@ def hits_from_search(
 def retrieve(
     k: int = 300,
     *,
-    artifacts_dir: Path = ARTIFACTS_DIR,
+    artifacts_dir: Path = ARTIFACTS_PATH,
     weights: tuple[float, float, float] | None = None,
 ) -> list[RetrievalHit]:
     """
@@ -150,14 +154,13 @@ def write_results_json(results: list[RetrievalHit], output_path: Path) -> None:
 
 
 def main() -> list[RetrievalHit]:
-    output_path = ARTIFACTS_DIR / "retrieval_results.json"
-    results = retrieve(k=300)
-    write_results_json(results, output_path)
+    results = retrieve(k=300, artifacts_dir=ARTIFACTS_PATH)
+    write_results_json(results, RESULTS_PATH)
 
     for hit in results[:10]:
         print(f"  {hit.rank:3d}. {hit.candidate_id}  score={hit.score:.4f}")
     print(f"Retrieval complete: {len(results)} candidates returned.")
-    print(f"Wrote results to {output_path}")
+    print(f"Wrote results to {RESULTS_PATH}")
     return results
 
 

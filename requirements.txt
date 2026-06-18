@@ -1,16 +1,16 @@
-# Offline precompute (INSTRUCTOR-large vector encoding — GPU allowed in precompute.py only)
-# Install torch with CUDA separately, e.g.:
-#   pip install torch --index-url https://download.pytorch.org/whl/cu124
-InstructorEmbedding>=1.0.1
-sentence-transformers>=2.7.0,<3.0.0
-transformers>=4.20.0,<5.0.0
-faiss-cpu>=1.7.4
+# Offline precompute — INSTRUCTOR-large ONNX (CUDA via onnxruntime-gpu)
+onnxruntime-gpu>=1.16.0
+transformers>=4.36.0
 numpy>=1.24.0
+faiss-cpu>=1.7.4
 psutil>=5.9.0
+protobuf>=3.20,<5
 
-# Online rank + downstream (plan.md)
+# Online rank + downstream
 polars>=0.20.0
-onnxruntime>=1.16.0
 lightgbm>=4.1.0
 rank_bm25>=0.2.2
 pyarrow>=15.0.0
+
+# NOTE: InstructorEmbedding + torch only needed for onnx/export_to_onnx.py (see onnx/requirements.txt)
+# NOTE: do not install onnxruntime (CPU) alongside onnxruntime-gpu

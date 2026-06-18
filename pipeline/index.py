@@ -1,4 +1,4 @@
-"""Batch processing and flat FAISS index construction with INSTRUCTOR-large."""
+"""Batch processing and flat FAISS index construction with INSTRUCTOR-large ONNX."""
 
 from __future__ import annotations
 
@@ -18,18 +18,18 @@ from pipeline.config import (
     INDEX_FILENAME,
     JD_QUERY_VEC_FILENAME,
     MAX_PASSAGE_TOKENS,
+    ONNX_BATCH_SIZE,
     VECTOR_DIM,
     resolve_passage_prep_workers,
 )
-from pipeline.extraction import build_candidate_passage, truncate_passage
-from pipeline.instructor_encode import (
-    INSTRUCTOR,
-    batch_size_for_device,
+from pipeline.encode import (
     build_jd_query_vector,
     encode_candidates,
     load_tokenizer,
     log_encode_plan,
 )
+from pipeline.extraction import build_candidate_passage, truncate_passage
+from pipeline.instructor_onnx import InstructorONNX
 
 
 def _open_candidates(path: Path):
@@ -88,17 +88,16 @@ def _add_vectors_to_index(
 
 def build_vector_index_from_records(
     records: Iterable[dict],
-    model: INSTRUCTOR,
+    model: InstructorONNX,
     output_dir: Path,
     *,
-    device: str,
     limit: int | None = None,
     index_batch_size: int = INDEX_BATCH_SIZE,
-    batch_size: int | None = None,
+    batch_size: int = ONNX_BATCH_SIZE,
     passage_workers: int | None = None,
 ) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
     """
-    Encode candidates with INSTRUCTOR-large and build a flat FAISS index.
+    Encode candidates with INSTRUCTOR-large ONNX and build a flat FAISS index.
 
     Returns (index, id_map, jd_query_vector).
     """
@@ -113,10 +112,8 @@ def build_vector_index_from_records(
     if not indexed_records:
         raise ValueError("No candidate records to process")
 
-    encode_batch_size = batch_size_for_device(device, batch_size)
     prep_workers = passage_workers if passage_workers is not None else resolve_passage_prep_workers()
-
-    log_encode_plan(device, encode_batch_size, len(indexed_records), prep_workers)
+    log_encode_plan(batch_size, len(indexed_records), prep_workers)
 
     tokenizer = load_tokenizer()
     record_list = [r for _, r in indexed_records]
@@ -124,7 +121,7 @@ def build_vector_index_from_records(
     passages = _prepare_passages_parallel(record_list, tokenizer, prep_workers)
 
     print("Encoding candidates (3 instruction passes)...")
-    vectors = encode_candidates(model, passages, batch_size=encode_batch_size)
+    vectors = encode_candidates(model, passages, batch_size=batch_size)
 
     print("Building JD query vector...")
     jd_query_vec = build_jd_query_vector(model)
@@ -155,13 +152,12 @@ def build_vector_index_from_records(
 
 def build_vector_index(
     candidates_path: Path,
-    model: INSTRUCTOR,
+    model: InstructorONNX,
     output_dir: Path,
     *,
-    device: str,
     limit: int | None = None,
     index_batch_size: int = INDEX_BATCH_SIZE,
-    batch_size: int | None = None,
+    batch_size: int = ONNX_BATCH_SIZE,
     passage_workers: int | None = None,
 ) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
     """Stream candidates from a file, encode vectors, build flat FAISS index."""
@@ -170,7 +166,6 @@ def build_vector_index(
         iter_candidates_from_path(candidates_path),
         model,
         output_dir,
-        device=device,
         limit=limit,
         index_batch_size=index_batch_size,
         batch_size=batch_size,

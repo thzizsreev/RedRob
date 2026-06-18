@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Offline Phase 1 — INSTRUCTOR-large block-weighted vector precomputation.
+Offline Phase 1 — INSTRUCTOR-large ONNX block-weighted vector precomputation.
 
-GPU/torch allowed here only. Outputs:
-  artifacts/candidate_index.faiss  (IndexFlatIP, 2304-d)
-  artifacts/id_map.json
-  artifacts/jd_query_vec.npy
+GPU via ONNX Runtime (CUDA) only. Edit CANDIDATES_PATH and OUTPUT_DIR below before running.
+Outputs (under OUTPUT_DIR):
+  candidate_index.faiss  (IndexFlatIP, 2304-d)
+  id_map.json
+  jd_query_vec.npy
 """
 
 from __future__ import annotations
@@ -18,9 +19,15 @@ from pipeline.config import (
     ARTIFACTS_DIR,
     CANDIDATES_JSONL_PATH,
     SAMPLE_CANDIDATES_PATH,
+    ROOT_DIR,
+    SAMPLE2_PATH,
 )
 from pipeline.index import build_vector_index, build_vector_index_from_records
-from pipeline.instructor_encode import load_instructor, resolve_device, unload_instructor
+from pipeline.instructor_onnx import load_embedder, unload_embedder
+
+# --- edit before run ---
+CANDIDATES_PATH = SAMPLE2_PATH
+OUTPUT_DIR = ROOT_DIR / "artifacts" / "sample2"
 
 
 def load_candidates_json(path: Path) -> list[dict]:
@@ -34,18 +41,17 @@ def load_candidates_json(path: Path) -> list[dict]:
 def run_precompute(
     candidates_path: Path,
     model,
-    *,
-    device: str,
-    output_dir: Path = ARTIFACTS_DIR,
+    output_dir: Path,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Writing artifacts to {output_dir}")
 
     if candidates_path.suffix == ".json":
         candidates = load_candidates_json(candidates_path)
         print(f"Processing {len(candidates)} candidates from {candidates_path}...")
-        build_vector_index_from_records(candidates, model, output_dir, device=device)
+        build_vector_index_from_records(candidates, model, output_dir)
     else:
-        build_vector_index(candidates_path, model, output_dir, device=device)
+        build_vector_index(candidates_path, model, output_dir)
 
     print("Precompute complete.")
 
@@ -61,27 +67,25 @@ def _format_duration(seconds: float) -> str:
 
 
 def main() -> None:
-    print(f"Using candidates file: {SAMPLE_CANDIDATES_PATH}")
-    device = resolve_device()
-    model = load_instructor(device=device)
+    print(f"Using candidates file: {CANDIDATES_PATH}")
+    model = load_embedder()
     started = perf_counter()
     try:
-        run_precompute(SAMPLE_CANDIDATES_PATH, model, device=device)
+        run_precompute(CANDIDATES_PATH, model, OUTPUT_DIR)
     finally:
-        unload_instructor(model)
+        unload_embedder(model)
     elapsed = perf_counter() - started
     print(f"Precompute complete in {_format_duration(elapsed)}.")
 
 
 def main_full() -> None:
     print(f"Using candidates file: {CANDIDATES_JSONL_PATH}")
-    device = resolve_device()
-    model = load_instructor(device=device)
+    model = load_embedder()
     started = perf_counter()
     try:
-        run_precompute(CANDIDATES_JSONL_PATH, model, device=device)
+        run_precompute(CANDIDATES_JSONL_PATH, model, ARTIFACTS_DIR)
     finally:
-        unload_instructor(model)
+        unload_embedder(model)
     elapsed = perf_counter() - started
     print(f"Precompute complete in {_format_duration(elapsed)}.")
 

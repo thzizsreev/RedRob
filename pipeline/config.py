@@ -63,10 +63,18 @@ JD_QUERY_VEC_FILENAME = "jd_query_vec.npy"
 INDEX_FILENAME = "candidate_index.faiss"
 ID_MAP_FILENAME = "id_map.json"
 
-INSTRUCTOR_BATCH_SIZE = 32
-INSTRUCTOR_BATCH_SIZE_CPU = 8
-INSTRUCTOR_VRAM_GB_ESTIMATE = 3.2
-ENCODE_DEVICE = "auto"  # "auto" | "cuda" | "cpu" — precompute only
+INSTRUCTOR_ONNX_DIR = ROOT_DIR / "onnx" / "models"
+INSTRUCTOR_ONNX_ENCODER = INSTRUCTOR_ONNX_DIR / "instructor-large-encoder.onnx"
+INSTRUCTOR_ONNX_TOKENIZER = INSTRUCTOR_ONNX_DIR / "tokenizer"
+INSTRUCTOR_ONNX_DENSE = INSTRUCTOR_ONNX_DIR / "dense_weight.npy"
+INSTRUCTOR_ONNX_CONFIG = INSTRUCTOR_ONNX_DIR / "config.txt"
+INSTRUCTOR_ONNX_MAX_SEQ_LENGTH = 512
+ONNX_BATCH_SIZE = 32
+ONNX_BATCH_SIZE_FALLBACK = (16, 8, 4)
+CUDA_PROVIDER = "CUDAExecutionProvider"
+
+# Legacy path (pipeline/parallel.py) — Track A precompute uses ONNX CUDA only
+ENCODE_DEVICE = "auto"
 
 INDEX_BATCH_SIZE = 500
 PASSAGE_PREP_WORKERS: int | None = None  # None = min(8, cpu_count - 1)
@@ -74,6 +82,9 @@ PASSAGE_PREP_WORKERS: int | None = None  # None = min(8, cpu_count - 1)
 DEFAULT_CANDIDATES_PATH = DATA_DIR / "candidates.jsonl.gz"
 CANDIDATES_JSONL_PATH = DATA_DIR / "candidates.jsonl"
 SAMPLE_CANDIDATES_PATH = DATA_DIR / "sample_candidates.json"
+SAMPLE2_PATH = DATA_DIR / "sample2.json"
+SAMPLE5K_PATH = DATA_DIR / "sample5k.json"
+SAMPLE10K_PATH = DATA_DIR / "sample10k.json"
 
 
 def resolve_passage_prep_workers() -> int:

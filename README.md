@@ -10,10 +10,12 @@ Hackathon project with two retrieval tracks:
 ## Quick start (Track A)
 
 1. Export ONNX model (once): `cd onnx && python export_to_onnx.py`
-2. Edit `CANDIDATES_PATH` and `OUTPUT_DIR` in [`precompute.py`](precompute.py), then run from project root:
+2. Run precompute (edit paths or pass CLI args), from project root:
    ```bash
-   python precompute.py
+   python precompute.py --candidates data/candidates.jsonl --output-dir artifacts/candidates
    ```
+   Default input: `data/candidates.jsonl`. Default output: `artifacts/candidates/` (derived from filename).
+   Writes `candidate_index.faiss`, `id_map.json`, `jd_query_vec.npy` under `--output-dir`.
 3. (Optional) Edit `ARTIFACTS_PATH` and `OUTPUT_DIR` in [`stage1.py`](stage1.py), then run Stage 1 in isolation:
    ```bash
    python stage1.py

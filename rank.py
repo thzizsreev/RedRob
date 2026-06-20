@@ -3,7 +3,8 @@
 Phase 2 — CPU-only retrieval (5-minute budget).
 
 Loads precomputed flat vector index and JD query vector.
-No torch, no INSTRUCTOR, no GPU — FAISS IndexFlatIP search only.
+Optional Stage 1 cluster-based filtering before top-k retrieval.
+No torch, no INSTRUCTOR, no GPU — FAISS / numpy IP search only.
 """
 
 from __future__ import annotations
@@ -15,14 +16,10 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from pipeline.config import (
-    BLOCK_DIM,
-    ID_MAP_FILENAME,
-    INDEX_FILENAME,
-    JD_QUERY_VEC_FILENAME,
-    QUERY_WEIGHTS,
-    ROOT_DIR,
-)
+from tracks.instructor.config import QUERY_WEIGHTS
+from tracks.instructor.io import load_index_and_id_map, load_jd_query_vector
+from tracks.instructor.stage1 import run_stage1_from_artifacts
+from tracks.shared.paths import ROOT_DIR
 
 # --- edit before run ---
 ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "sample1k"
@@ -34,39 +31,6 @@ class RetrievalHit:
     rank: int
     candidate_id: str
     score: float
-
-
-def load_index_and_id_map(
-    artifacts_dir: Path = ARTIFACTS_PATH,
-) -> tuple[faiss.Index, dict[int, str]]:
-    index_path = artifacts_dir / INDEX_FILENAME
-    id_map_path = artifacts_dir / ID_MAP_FILENAME
-
-    if not index_path.exists():
-        raise FileNotFoundError(
-            f"Index not found: {index_path}. Run precompute.py first."
-        )
-    if not id_map_path.exists():
-        raise FileNotFoundError(
-            f"ID map not found: {id_map_path}. Run precompute.py first."
-        )
-
-    index = faiss.read_index(str(index_path))
-    with open(id_map_path, encoding="utf-8") as f:
-        id_map = {int(k): v for k, v in json.load(f).items()}
-    return index, id_map
-
-
-def load_jd_query_vector(artifacts_dir: Path = ARTIFACTS_PATH) -> np.ndarray:
-    query_path = artifacts_dir / JD_QUERY_VEC_FILENAME
-    if not query_path.exists():
-        raise FileNotFoundError(
-            f"JD query vector not found: {query_path}. Run precompute.py first."
-        )
-    vec = np.load(query_path).astype(np.float32)
-    if vec.shape != (BLOCK_DIM * 3,):
-        raise ValueError(f"Expected jd_query_vec shape ({BLOCK_DIM * 3},), got {vec.shape}")
-    return vec
 
 
 def apply_query_weights(
@@ -110,23 +74,67 @@ def hits_from_search(
     return results
 
 
+def retrieve_on_subset(
+    candidate_ids: list[str],
+    vectors: np.ndarray,
+    filtered_ids: set[str],
+    query_vector: np.ndarray,
+    k: int,
+) -> list[RetrievalHit]:
+    id_to_row = {cid: i for i, cid in enumerate(candidate_ids)}
+    row_indices = [id_to_row[cid] for cid in filtered_ids if cid in id_to_row]
+    if not row_indices:
+        return []
+
+    subset_vectors = vectors[row_indices]
+    subset_ids = [candidate_ids[i] for i in row_indices]
+    scores = subset_vectors @ query_vector
+    k = min(k, len(scores))
+    top_indices = np.argsort(-scores)[:k]
+
+    return [
+        RetrievalHit(
+            rank=rank,
+            candidate_id=subset_ids[int(idx)],
+            score=float(scores[int(idx)]),
+        )
+        for rank, idx in enumerate(top_indices, start=1)
+    ]
+
+
 def retrieve(
     k: int = 300,
     *,
     artifacts_dir: Path = ARTIFACTS_PATH,
     weights: tuple[float, float, float] | None = None,
+    use_stage1_filter: bool = True,
 ) -> list[RetrievalHit]:
     """
     Run block-weighted vector retrieval against the precomputed index.
 
-    Returns ranked hits with candidate_id and inner-product score.
+    When use_stage1_filter is True, runs UMAP + HDBSCAN cluster filtering
+    first and retrieves top-k only from the filtered candidate pool.
     """
-    index, id_map = load_index_and_id_map(artifacts_dir)
     query_vector = load_jd_query_vector(artifacts_dir)
-
     if weights is not None and weights != QUERY_WEIGHTS:
         query_vector = apply_query_weights(query_vector, weights)
 
+    if use_stage1_filter:
+        stage1_run = run_stage1_from_artifacts(
+            artifacts_dir,
+            output_dir=None,
+            anchor_vec=query_vector,
+            print_summary=True,
+        )
+        return retrieve_on_subset(
+            stage1_run.candidate_ids,
+            stage1_run.vectors,
+            stage1_run.result.filtered_ids,
+            query_vector,
+            k,
+        )
+
+    index, id_map = load_index_and_id_map(artifacts_dir)
     scores, indices = search_index(index, query_vector, k)
     return hits_from_search(scores, indices, id_map)
 

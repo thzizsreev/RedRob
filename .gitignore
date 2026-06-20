@@ -15,14 +15,15 @@ data/candidates.jsonl.gz
 data/sample*.json
 !data/sample_candidates.json
 
-# Precompute + rank outputs (rebuild with precompute.py / rank.py; backed up locally)
+# Track A precompute + Stage 1 + rank outputs (rebuild locally)
 # Per-sample dirs: artifacts/sample1k/, sample5k/, sample10k/, sample20k/, ...
+#   candidate_index.faiss, id_map.json, jd_query_vec.npy
+#   stage1/ subdir from stage1.py: filtered_ids.json, cluster_rankings.json, stage1_summary.json
 artifacts/*
 !artifacts/.gitkeep
 artifacts/**
 !artifacts/**/
 !artifacts/**/.gitkeep
-artifacts/anchors/*.npy
 
 # INSTRUCTOR ONNX export output (regenerate: cd onnx && python export_to_onnx.py)
 onnx/models/**
@@ -32,10 +33,10 @@ onnx/models/**
 # Legacy scratch model dir at repo root (not onnx/models/)
 /models/
 
-# Naivee generated outputs
-naivee/artifacts/**
-!naivee/artifacts/
-!naivee/artifacts/.gitkeep
+# Naive track generated outputs
+tracks/naive/artifacts/**
+!tracks/naive/artifacts/
+!tracks/naive/artifacts/.gitkeep
 
 # Local environment and secrets
 .env
@@ -45,7 +46,8 @@ naivee/artifacts/**
 torch_install.log
 *.log
 
-# Clustering + retrieval test outputs (test/run_clustering_test.py, rank.py)
+# Test harness outputs (tests/run_clustering_test.py, tests/run_filtering_test.py, rank.py)
+#   test_output/clustering/, test_output/filtering/, test_output/retrieval/
 test_output/**
 !test_output/
 !test_output/.gitkeep

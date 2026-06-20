@@ -15,15 +15,17 @@ import json
 from pathlib import Path
 from time import perf_counter
 
-from pipeline.config import (
+from tracks.instructor.index import build_vector_index, build_vector_index_from_records
+from tracks.instructor.onnx_embedder import load_embedder, unload_embedder
+from tracks.shared.paths import (
     ARTIFACTS_DIR,
     CANDIDATES_JSONL_PATH,
-    SAMPLE_CANDIDATES_PATH,
     ROOT_DIR,
-    SAMPLE1K_PATH
+    SAMPLE1K_PATH,
+    SAMPLE10K_PATH,
+    SAMPLE5K_PATH,
+    SAMPLE20K_PATH,
 )
-from pipeline.index import build_vector_index, build_vector_index_from_records
-from pipeline.instructor_onnx import load_embedder, unload_embedder
 
 # --- edit before run ---
 CANDIDATES_PATH = SAMPLE1K_PATH

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Encode sample texts with INSTRUCTOR-large via ONNX (uses pipeline embedder)."""
+"""Encode sample texts with INSTRUCTOR-large via ONNX."""
 
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
-from pipeline.instructor_onnx import InstructorONNX, load_embedder, unload_embedder
+from tracks.instructor.onnx_embedder import load_embedder, unload_embedder
 
 PAIRS = [
     [

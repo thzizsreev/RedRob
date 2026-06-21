@@ -60,26 +60,32 @@ python tests/run_filtering_test.py
 
 ## Stage 1 filtering (Track A)
 
-Before retrieval, `rank.py` runs **full online** Stage 1 by default:
+Stage 1 is split into two steps:
 
-1. UMAP reduce (12-d) → HDBSCAN cluster assignment
+| Step | Script | When | What |
+|------|--------|------|------|
+| **A** | `stage1_cluster.py` | Once per pool | FAISS export → UMAP → HDBSCAN → `stage1/*.npy` |
+| **B** | `stage1.py` | Repeat | Load `.npy` → rank by JD anchor → filter to floor → JSON |
+
+Before retrieval, `rank.py` runs **Phase B only** by default (assumes Phase A was run offline):
+
+1. Load precomputed cluster labels and vectors from `artifacts/<pool>/stage1/`
 2. Rank clusters by **median** inner-product similarity to `jd_query_vec.npy`
 3. Walk ranked clusters atomically until `floor=100` candidates are selected
 4. Top-k retrieval runs only on that filtered pool
 
 Production modules live under `tracks/instructor/clustering/` and `tracks/instructor/filtering/`. Tests import from `tracks/` only — production code never imports from `tests/`.
 
-**Expected runtime:** UMAP + HDBSCAN on the full pool can take minutes at 5k–100k scale. Disable with `retrieve(..., use_stage1_filter=False)` for A/B comparison.
+**Expected runtime:** Phase A (UMAP + HDBSCAN) can take minutes at 5k–100k scale. Phase B is seconds. Disable Stage 1 in retrieval with `retrieve(..., use_stage1_filter=False)` for A/B comparison.
 
-Run Stage 1 in isolation (edit paths in [`stage1.py`](stage1.py)):
+Run Stage 1 in isolation (edit paths in [`stage1_cluster.py`](stage1_cluster.py) and [`stage1.py`](stage1.py)):
 
 ```bash
-python stage1.py
+python stage1_cluster.py   # once: writes stage1/*.npy
+python stage1.py           # repeat: writes filtered JSON under stage1/
 ```
 
-Output: configurable via `OUTPUT_DIR` in `stage1.py` (default: `artifacts/<sample>/stage1/`)
-
-The legacy test entry point `tests/run_filtering_test.py` is frozen and not used by production.
+The legacy test entry point `tests/run_filtering_test.py` mirrors the same two-phase flow programmatically.
 
 ## Notes
 

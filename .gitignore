@@ -8,6 +8,8 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # Large candidate datasets (download separately; sample JSONs backed up locally)
 data/candidates.jsonl
@@ -16,9 +18,16 @@ data/sample*.json
 !data/sample_candidates.json
 
 # Track A precompute + Stage 1 + rank outputs (rebuild locally)
-# Per-sample dirs: artifacts/sample1k/, sample5k/, sample10k/, sample20k/, ...
-#   candidate_index.faiss, id_map.json, jd_query_vec.npy
-#   stage1/ subdir from stage1.py: filtered_ids.json, cluster_rankings.json, stage1_summary.json
+# Per-pool dirs: artifacts/sample1k/, sample5k/, candidates_full/, ...
+#   precompute.py:
+#     candidate_index.faiss, id_map.json, jd_query_vec.npy
+#   stage1_cluster.py (Phase A):
+#     stage1/candidate_vectors.npy, cluster_labels.npy, umap_reduced_12d.npy,
+#     cluster_manifest.json
+#   stage1.py (Phase B):
+#     stage1/filtered_ids.json, filtered_metadata.json, cluster_rankings.json,
+#     stage1_summary.json
+#   rank.py: retrieval_results.json (when written under the pool dir)
 artifacts/*
 !artifacts/.gitkeep
 artifacts/**
@@ -51,3 +60,12 @@ torch_install.log
 test_output/**
 !test_output/
 !test_output/.gitkeep
+
+# Editor / IDE
+.vscode/
+.cursor/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db

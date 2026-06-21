@@ -28,8 +28,8 @@ from tracks.shared.paths import (
 )
 
 # --- edit before run ---
-CANDIDATES_PATH = SAMPLE1K_PATH
-OUTPUT_DIR = ROOT_DIR / "artifacts" / "sample1k"
+CANDIDATES_PATH = CANDIDATES_JSONL_PATH
+OUTPUT_DIR = ROOT_DIR / "artifacts" / "candidates_full"
 
 
 def load_candidates_json(path: Path) -> list[dict]:

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import gzip
 import json
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
@@ -29,30 +28,8 @@ from tracks.instructor.encode import (
     log_encode_plan,
 )
 from tracks.instructor.extraction import build_candidate_passage, truncate_passage
+from tracks.instructor.io import iter_candidates_from_path
 from tracks.instructor.onnx_embedder import InstructorONNX
-
-
-def _open_candidates(path: Path):
-    if path.suffix == ".gz" or str(path).endswith(".jsonl.gz"):
-        return gzip.open(path, "rt", encoding="utf-8")
-    return open(path, "r", encoding="utf-8")
-
-
-def iter_candidates_from_path(path: Path) -> Iterable[dict]:
-    """Yield candidate records from JSONL(.gz) or a JSON array file."""
-    if path.suffix == ".json":
-        with open(path, encoding="utf-8") as f:
-            records = json.load(f)
-        if not isinstance(records, list):
-            raise ValueError(f"Expected JSON array in {path}")
-        yield from records
-        return
-
-    with _open_candidates(path) as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                yield json.loads(line)
 
 
 def _prepare_passage(record: dict, tokenizer) -> str:

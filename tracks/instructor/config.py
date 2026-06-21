@@ -82,6 +82,15 @@ STAGE1_RANDOM_SEED = 42
 UMAP_CLUSTERING_DIMS = 12
 UMAP_N_NEIGHBORS = 20
 
+STAGE1_DIRNAME = "stage1"
+STAGE1_CANDIDATE_VECTORS_FILENAME = "candidate_vectors.npy"
+STAGE1_CLUSTER_LABELS_FILENAME = "cluster_labels.npy"
+STAGE1_UMAP_REDUCED_FILENAME = "umap_reduced_12d.npy"
+STAGE1_CLUSTER_MANIFEST_FILENAME = "cluster_manifest.json"
+
+STAGE1_UMAP_N_JOBS = 1  # -1 for parallel UMAP (non-reproducible; omits random_state)
+STAGE1_HDBSCAN_CORE_DIST_N_JOBS = -1
+
 
 def resolve_passage_prep_workers() -> int:
     if PASSAGE_PREP_WORKERS is not None:

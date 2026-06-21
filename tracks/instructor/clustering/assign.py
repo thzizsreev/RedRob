@@ -13,6 +13,8 @@ def min_cluster_size(sample_size: int) -> int:
 def assign_cluster_labels(
     reduced_vectors: np.ndarray,
     sample_size: int,
+    *,
+    core_dist_n_jobs: int = -1,
 ) -> np.ndarray:
     """Assign HDBSCAN cluster labels; -1 denotes noise."""
     mcs = min_cluster_size(sample_size)
@@ -21,5 +23,6 @@ def assign_cluster_labels(
         min_samples=mcs,
         metric="euclidean",
         cluster_selection_method="eom",
+        core_dist_n_jobs=core_dist_n_jobs,
     )
     return clusterer.fit_predict(reduced_vectors)

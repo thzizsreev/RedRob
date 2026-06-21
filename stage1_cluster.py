@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Stage 1 Phase B — rank clusters and filter to floor (Track A).
+Stage 1 Phase A — cluster precompute (Track A).
 
-Requires Phase A artifacts from stage1_cluster.py. Edit ARTIFACTS_PATH below before running.
-Outputs (under OUTPUT_DIR):
-  filtered_ids.json
-  filtered_metadata.json
-  cluster_rankings.json
-  stage1_summary.json
+Run once per candidate pool after precompute.py. Edit ARTIFACTS_PATH below before running.
+Outputs (under STAGE1_PATH):
+  candidate_vectors.npy
+  cluster_labels.npy
+  umap_reduced_12d.npy
+  cluster_manifest.json
+
+Then run stage1.py (Phase B) to rank clusters and write filtered JSON artifacts.
 """
 
 from __future__ import annotations
@@ -15,26 +17,26 @@ from __future__ import annotations
 from time import perf_counter
 
 from tracks.instructor.config import STAGE1_RANDOM_SEED
-from tracks.instructor.stage1 import run_stage1_filter
+from tracks.instructor.stage1 import precompute_stage1_clustering
 from tracks.shared.paths import ROOT_DIR
 
 # --- edit before run ---
 ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "candidates_full"
 STAGE1_PATH = ARTIFACTS_PATH / "stage1"
-OUTPUT_DIR = STAGE1_PATH
+OVERWRITE = False
 RANDOM_SEED = STAGE1_RANDOM_SEED
 
 
 def main() -> None:
     start_time = perf_counter()
-    run_stage1_filter(
+    precompute_stage1_clustering(
         ARTIFACTS_PATH,
         stage1_path=STAGE1_PATH,
-        output_dir=OUTPUT_DIR,
         random_seed=RANDOM_SEED,
+        overwrite=OVERWRITE,
     )
     elapsed = perf_counter() - start_time
-    print(f"Stage 1 filter completed in {elapsed:.2f} seconds")
+    print(f"Stage 1 cluster precompute completed in {elapsed:.2f} seconds")
 
 
 if __name__ == "__main__":

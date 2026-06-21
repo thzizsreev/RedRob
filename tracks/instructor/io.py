@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import gzip
 import json
+from collections.abc import Iterable
 from pathlib import Path
 
 import faiss
@@ -11,12 +13,46 @@ import numpy as np
 from tracks.instructor.config import ID_MAP_FILENAME, INDEX_FILENAME, VECTOR_DIM
 
 
+def _open_candidates(path: Path):
+    if path.suffix == ".gz" or str(path).endswith(".jsonl.gz"):
+        return gzip.open(path, "rt", encoding="utf-8")
+    return open(path, encoding="utf-8")
+
+
+def iter_candidates_from_path(path: Path) -> Iterable[dict]:
+    """Yield candidate records from JSONL(.gz) or a JSON array file."""
+    if path.suffix == ".json":
+        with open(path, encoding="utf-8") as f:
+            records = json.load(f)
+        if not isinstance(records, list):
+            raise ValueError(f"Expected JSON array in {path}")
+        yield from records
+        return
+
+    with _open_candidates(path) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                yield json.loads(line)
+
+
 def load_candidates_json(path: Path) -> list[dict]:
-    with open(path, encoding="utf-8") as f:
-        records = json.load(f)
-    if not isinstance(records, list):
-        raise ValueError(f"Expected a JSON array in {path}")
-    return records
+    """Load all candidate records from JSON array, JSONL, or JSONL.gz."""
+    return list(iter_candidates_from_path(path))
+
+
+def load_candidate_ids_from_id_map(
+    artifacts_dir: Path,
+    *,
+    index_filename: str = INDEX_FILENAME,
+) -> list[str]:
+    """Return candidate IDs in FAISS row order (phase B id alignment)."""
+    index, id_map = load_index_and_id_map(artifacts_dir, index_filename=index_filename)
+    if index.ntotal != len(id_map):
+        raise ValueError(
+            f"Index size ({index.ntotal}) does not match id_map ({len(id_map)})"
+        )
+    return [id_map[faiss_id] for faiss_id in range(index.ntotal)]
 
 
 def load_index_and_id_map(

@@ -25,14 +25,14 @@ from tracks.naive.config import (
     NAIVE_INDEX_FILENAME,
     NAIVE_VECTOR_DIM,
 )
-from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, SAMPLE1K_PATH
+from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, SAMPLE1K_PATH, CANDIDATES_JSONL_PATH
 
 # --- edit before run ---
 TRACK = "instructor"  # "naive" | "instructor"
-SAMPLE_TAG = "sample1k"
+SAMPLE_TAG = "candidates_full"
 
-CANDIDATES_PATH = SAMPLE1K_PATH
-SAMPLE_SIZE = 1000
+CANDIDATES_PATH = CANDIDATES_JSONL_PATH
+SAMPLE_SIZE = 100000
 RANDOM_SEED = 42
 LANDMARK_CANDIDATE_IDS: list[str] = []
 ENABLE_ID_SEARCH = True

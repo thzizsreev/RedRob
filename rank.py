@@ -18,7 +18,7 @@ import numpy as np
 
 from tracks.instructor.config import QUERY_WEIGHTS
 from tracks.instructor.io import load_index_and_id_map, load_jd_query_vector
-from tracks.instructor.stage1 import run_stage1_from_artifacts
+from tracks.instructor.stage1 import run_stage1_filter
 from tracks.shared.paths import ROOT_DIR
 
 # --- edit before run ---
@@ -112,19 +112,20 @@ def retrieve(
     """
     Run block-weighted vector retrieval against the precomputed index.
 
-    When use_stage1_filter is True, runs UMAP + HDBSCAN cluster filtering
-    first and retrieves top-k only from the filtered candidate pool.
+    When use_stage1_filter is True, runs phase-B Stage 1 filter (loads precomputed
+    cluster artifacts from artifacts_dir/stage1/) and retrieves top-k only from
+    the filtered candidate pool. Run precompute_stage1_clustering() offline first.
     """
     query_vector = load_jd_query_vector(artifacts_dir)
     if weights is not None and weights != QUERY_WEIGHTS:
         query_vector = apply_query_weights(query_vector, weights)
 
     if use_stage1_filter:
-        stage1_run = run_stage1_from_artifacts(
+        stage1_run = run_stage1_filter(
             artifacts_dir,
-            output_dir=None,
             anchor_vec=query_vector,
             print_summary=True,
+            write_artifacts=False,
         )
         return retrieve_on_subset(
             stage1_run.candidate_ids,

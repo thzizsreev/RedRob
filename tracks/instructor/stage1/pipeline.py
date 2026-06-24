@@ -12,11 +12,10 @@ from pathlib import Path
 
 import numpy as np
 
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 if __package__ is None and str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tracks.instructor.clustering import min_cluster_size
 from tracks.instructor.config import (
     INDEX_FILENAME,
     STAGE1_FLOOR,
@@ -27,17 +26,12 @@ from tracks.instructor.config import (
     UMAP_N_NEIGHBORS,
     VECTOR_DIM,
 )
-from tracks.instructor.filtering.pipeline import (
-    Stage1Result,
-    cluster_candidates,
-    filter_from_labels,
-)
 from tracks.instructor.io import (
     load_candidate_ids_from_id_map,
     load_jd_query_vector,
     load_vectors_from_artifacts,
 )
-from tracks.instructor.stage1_artifacts import (
+from tracks.instructor.stage1.artifacts import (
     ClusterManifest,
     Stage1ClusterArtifacts,
     assert_cluster_artifacts_absent,
@@ -46,6 +40,12 @@ from tracks.instructor.stage1_artifacts import (
     save_cluster_artifacts,
     stage1_dir,
     validate_manifest_params,
+)
+from tracks.instructor.stage1.clustering import min_cluster_size
+from tracks.instructor.stage1.filtering.pipeline import (
+    Stage1Result,
+    cluster_candidates,
+    filter_from_labels,
 )
 
 
@@ -389,4 +389,4 @@ def run_stage1_from_artifacts(
 
 
 if __name__ == "__main__":
-    runpy.run_path(str(_ROOT / "stage1.py"), run_name="__main__")
+    runpy.run_path(str(_ROOT / "tracks/instructor/stage1/run_filter.py"), run_name="__main__")

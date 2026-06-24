@@ -1,0 +1,12 @@
+{
+  "input_count": 179,
+  "survivor_count": 58,
+  "removed_count": 121,
+  "removal_breakdown": {
+    "honeypot_skill_years_impossible": 106,
+    "honeypot_timeline_sum": 4,
+    "exp_out_of_band": 8,
+    "honeypot_graduation_vs_exp": 3
+  },
+  "elapsed_seconds": 5.021
+}

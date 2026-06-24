@@ -11,6 +11,7 @@ import faiss
 import numpy as np
 
 from tracks.instructor.config import (
+    CANDIDATE_VECTORS_FILENAME,
     EMPTY_BLOCK_TEXT,
     ID_MAP_FILENAME,
     INDEX_BATCH_SIZE,
@@ -72,11 +73,11 @@ def build_vector_index_from_records(
     index_batch_size: int = INDEX_BATCH_SIZE,
     batch_size: int = ONNX_BATCH_SIZE,
     passage_workers: int | None = None,
-) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
+) -> tuple[faiss.Index, dict[int, str], np.ndarray, list[dict]]:
     """
     Encode candidates with INSTRUCTOR-large ONNX and build a flat FAISS index.
 
-    Returns (index, id_map, jd_query_vector).
+    Returns (index, id_map, jd_query_vector, records_in_row_order).
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -114,17 +115,20 @@ def build_vector_index_from_records(
     id_map_path = output_dir / ID_MAP_FILENAME
     jd_query_path = output_dir / JD_QUERY_VEC_FILENAME
 
+    vectors_path = output_dir / CANDIDATE_VECTORS_FILENAME
     faiss.write_index(index, str(index_path))
     with open(id_map_path, "w", encoding="utf-8") as f:
         json.dump({str(k): v for k, v in id_map.items()}, f)
     np.save(jd_query_path, jd_query_vec)
+    np.save(vectors_path, vectors.astype(np.float32))
 
     print(f"Index built: {index.ntotal:,} vectors, dim={VECTOR_DIM}")
     print(f"Saved {index_path}")
     print(f"Saved {id_map_path}")
     print(f"Saved {jd_query_path}")
+    print(f"Saved {vectors_path}")
 
-    return index, id_map, jd_query_vec
+    return index, id_map, jd_query_vec, record_list
 
 
 def build_vector_index(
@@ -136,7 +140,7 @@ def build_vector_index(
     index_batch_size: int = INDEX_BATCH_SIZE,
     batch_size: int = ONNX_BATCH_SIZE,
     passage_workers: int | None = None,
-) -> tuple[faiss.Index, dict[int, str], np.ndarray]:
+) -> tuple[faiss.Index, dict[int, str], np.ndarray, list[dict]]:
     """Stream candidates from a file, encode vectors, build flat FAISS index."""
     print(f"Processing candidates from {candidates_path}...")
     return build_vector_index_from_records(

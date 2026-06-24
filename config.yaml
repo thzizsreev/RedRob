@@ -1,0 +1,485 @@
+stage2:
+  hard_min: 5
+  hard_max: 9
+  soft_tolerance: 1
+  sweet_low: 6
+  sweet_high: 8
+  stuffer_density: 0.5
+  expert_zero_threshold: 1
+  skill_years_slack: 0.5
+  stale_days: 180
+  min_response_rate: 0.10
+  enable_isolation_forest: false
+  current_date: "2026-06-22"
+  expected_input_count: 6000
+  expected_survivor_min: 2000
+  expected_survivor_max: 5000
+  honeypot:
+    duration_overshoot_grace_days: 30
+    experience_overage_tolerance_years: 2
+    grad_to_work_buffer_years: 1
+  title_families:
+    core_eng:
+      - engineer
+      - ml engineer
+      - ai engineer
+      - software engineer
+      - sde
+      - backend
+      - applied scientist
+      - research engineer
+      - search engineer
+      - mlops
+      - data engineer
+      - platform engineer
+      - backend engineer
+      - frontend engineer
+      - full stack engineer
+      - staff engineer
+      - senior engineer
+      - principal engineer
+    adjacent_eng:
+      - data scientist
+      - analytics engineer
+      - research scientist
+      - nlp scientist
+      - machine learning scientist
+    ambiguous:
+      - analyst
+      - consultant
+      - lead
+      - architect
+      - specialist
+      - developer
+      - engineering manager
+      - tech lead
+      - manager
+    non_eng:
+      - marketing
+      - sales
+      - hr
+      - recruiter
+      - accountant
+      - operations manager
+      - product manager
+      - designer
+      - customer success
+      - business analyst
+      - project manager
+  jd_keywords:
+    - embeddings
+    - retrieval
+    - ranking
+    - vector database
+    - faiss
+    - pinecone
+    - qdrant
+    - weaviate
+    - milvus
+    - opensearch
+    - elasticsearch
+    - ndcg
+    - mrr
+    - map
+    - sentence-transformers
+    - bge
+    - e5
+    - lora
+    - qlora
+    - learning-to-rank
+    - rag
+    - cross-encoder
+    - a/b test
+    - embedding drift
+    - hybrid search
+    - hnsw
+  consulting:
+    named_firms:
+      - tcs
+      - tata consultancy
+      - infosys
+      - wipro
+      - accenture
+      - cognizant
+      - capgemini
+      - hcl
+      - tech mahindra
+      - mphasis
+      - hexaware
+      - mindtree
+      - l&t infotech
+      - ltimindtree
+      - niit technologies
+      - patni
+      - mastech
+      - kforce
+      - igate
+    consulting_signal_words:
+      - consulting
+      - consultancy
+      - outsourcing
+      - staffing
+      - it services
+    min_employers_to_classify: 2
+    product_fraction_threshold: 0.0
+  research:
+    research_title_signals:
+      - phd
+      - postdoc
+      - post-doctoral
+      - doctoral
+      - research intern
+      - research fellow
+      - research assistant
+      - research associate
+      - principal investigator
+      - professor
+      - lecturer
+      - teaching assistant
+      - graduate researcher
+    academic_employer_signals:
+      - university
+      - college
+      - institute of technology
+      - iit
+      - iisc
+      - research lab
+      - research institute
+      - national lab
+    production_title_signals:
+      - engineer
+      - developer
+      - sde
+      - mle
+      - applied scientist
+      - architect
+      - tech lead
+      - staff
+    research_heavy_threshold: 0.8
+    min_roles_to_classify: 1
+  coding_recency:
+    stale_coding_window_months: 18
+    management_title_signals:
+      - chief architect
+      - enterprise architect
+      - solution architect
+      - engineering manager
+      - vp engineering
+      - director of engineering
+      - head of engineering
+      - cto
+      - technical director
+      - principal architect
+    hands_on_title_signals:
+      - software engineer
+      - ml engineer
+      - machine learning engineer
+      - applied scientist
+      - research engineer
+      - sde
+      - data engineer
+      - backend engineer
+      - staff engineer
+      - principal engineer
+  shallow_ai:
+    llm_era_start_year: 2022
+    recent_ai_window_months: 12
+    llm_framework_signals:
+      - langchain
+      - llamaindex
+      - llama-index
+      - autogpt
+      - crewai
+      - openai api
+      - anthropic api
+      - azure openai
+      - chatgpt api
+    pre_llm_skill_signals:
+      - scikit-learn
+      - sklearn
+      - xgboost
+      - lightgbm
+      - word2vec
+      - fasttext
+      - spacy
+      - nltk
+      - traditional nlp
+      - recommendation system
+      - collaborative filtering
+      - classical ml
+      - feature engineering
+      - pytorch
+      - tensorflow
+    min_llm_framework_skills: 2
+    ml_title_signals:
+      - ml
+      - machine learning
+      - ai engineer
+      - data scientist
+      - applied scientist
+      - research engineer
+      - nlp
+  career_shape:
+    short_hop_threshold_years: 1.5
+  logistics:
+    preferred_locations:
+      - noida
+      - pune
+      - delhi
+      - delhi ncr
+      - ncr
+      - gurgaon
+      - gurugram
+      - faridabad
+      - new delhi
+    acceptable_locations:
+      - hyderabad
+      - mumbai
+      - bangalore
+      - bengaluru
+      - chennai
+      - kolkata
+    india_signals:
+      - india
+
+stage3:
+  q1_text: |
+    Production experience building and operating embeddings-based retrieval systems deployed
+    to real users. Handled embedding drift, index refresh cycles, and retrieval quality
+    regression in production environments. Built or operated vector database infrastructure
+    using systems such as Pinecone, Qdrant, Weaviate, Milvus, OpenSearch, Elasticsearch,
+    or FAISS at meaningful scale. Designed and maintained evaluation frameworks for ranking
+    systems including NDCG, MRR, MAP, offline-to-online correlation, and A/B testing of
+    ranking changes. Strong Python engineering skills in production ML systems.
+  q2_text: |
+    Six to eight years of total experience, four to five of which were spent in applied ML
+    and AI engineering roles at product companies rather than consulting firms or research
+    labs. Shipped at least one end-to-end ranking, search, or recommendation system to real
+    users at meaningful scale. Have strong opinions about hybrid versus dense retrieval,
+    offline versus online evaluation, and when to fine-tune a model versus prompt an existing
+    one, all grounded in systems I actually built and ran in production. Prefer shipping a
+    working system and iterating over designing a perfect system that never ships. Comfortable
+    owning an entire intelligence layer of a product, not just a model component.
+  q3_text: |
+    Career shows a pattern of switching companies every one to two years specifically to gain
+    a more senior title. GitHub or portfolio consists primarily of LangChain tutorials,
+    framework demos, and beginner AI projects with no evidence of production systems thinking.
+    Entire career spent at large consulting firms such as TCS, Infosys, Wipro, Accenture,
+    Cognizant, or Capgemini with no product company experience at any point. Background is
+    primarily in academic research or pure research roles with no production deployments of
+    any ML system to real users. Primary expertise is in computer vision, speech processing,
+    or robotics with no meaningful experience in information retrieval, NLP, or ranking systems.
+    Has spent five or more years working entirely on closed-source proprietary internal systems
+    with no external validation through papers, talks, blog posts, or open-source contributions.
+  q4_tokens:
+    - FAISS
+    - HNSW
+    - Qdrant
+    - Weaviate
+    - Milvus
+    - Pinecone
+    - OpenSearch
+    - Elasticsearch
+    - NDCG
+    - MRR
+    - MAP
+    - cross-encoder
+    - bi-encoder
+    - embedding drift
+    - hybrid search
+    - learning-to-rank
+    - sentence-transformers
+    - BGE
+    - E5
+    - RAG
+    - A/B test
+    - retrieval-augmented
+    - reranking
+    - vector database
+    - dense retrieval
+    - sparse retrieval
+    - BM25
+    - semantic search
+    - embedding model
+    - fine-tuning
+    - LoRA
+    - QLoRA
+    - PEFT
+    - lambdarank
+    - XGBoost
+    - LightGBM
+    - inference optimization
+  subspace_weights_q1:
+    retrieval: 0.35
+    infra: 0.45
+    eval: 0.20
+  subspace_weights_q2:
+    retrieval: 0.33
+    infra: 0.34
+    eval: 0.33
+  subspace_weights_q3:
+    retrieval: 0.33
+    infra: 0.34
+    eval: 0.33
+  per_query_k_dense: 1000
+  per_query_k_sparse: 500
+  rrf_k: 60
+  alpha_neg: 0.5
+  beta_cluster: 0.0
+  z_threshold: 1.5
+  min_k: 300
+  max_k: 600
+  use_prf: false
+  expected_survivor_min: 2000
+  expected_survivor_max: 5000
+
+stage4:
+  model_id: cross-encoder/ms-marco-MiniLM-L-6-v2
+  onnx_model_path: models/cross_encoder/model.onnx
+  tokenizer_path: models/cross_encoder/tokenizer
+  jd_text: |
+    Senior AI Engineer role requiring production embeddings-based retrieval and hybrid search
+    systems deployed to real users; hands-on vector database operations (FAISS, Qdrant, Weaviate,
+    Milvus, Pinecone, OpenSearch, or Elasticsearch); evaluation framework design (NDCG, MRR, MAP,
+    offline-to-online correlation, A/B tests); strong Python in production ML. Ideal candidate has
+    6–8 years total experience, 4–5 in applied ML at product companies, shipped end-to-end ranking
+    or search to scale, and avoids consulting-only or research-only trajectories without production
+    deployments.
+  max_jd_tokens: 256
+  max_candidate_tokens: 384
+  max_pair_tokens: 512
+  batch_size: 16
+  num_threads: 4
+  keep_n: 300
+  rank_delta_threshold: 50
+  expected_input_min: 300
+  expected_input_max: 600
+  candidate_features_path: artifacts/precomputed/candidate_features.parquet
+  candidates_jsonl_path: data/candidates.jsonl
+
+stage5:
+  team_id: "team_xxx"
+  top_n: 100
+  current_date: "2026-06-22"
+  stage4_input_path: artifacts/runtime/stage4/stage4_reranked.parquet
+  candidates_jsonl_path: data/candidates.jsonl
+  candidate_features_path: artifacts/precomputed/candidate_features.parquet
+  output_dir: artifacts/runtime/stage5
+
+  core_weights:
+    w_cross: 0.45
+    w_fused: 0.25
+    w_q1: 0.20
+    w_q2: 0.10
+  must_have_floor_min: 0.4
+
+  must_have_keywords:
+    retrieval:
+      - embeddings
+      - semantic search
+      - retrieval
+      - rag
+      - sentence-transformers
+      - bge
+      - e5
+      - dense retrieval
+    vector_db:
+      - faiss
+      - pinecone
+      - qdrant
+      - weaviate
+      - milvus
+      - opensearch
+      - elasticsearch
+      - vector database
+      - hnsw
+    eval:
+      - ndcg
+      - mrr
+      - map
+      - a/b test
+      - evaluation
+      - ranking metrics
+      - offline-to-online
+    python:
+      - python
+
+  career_shape:
+    product_floor: 0.5
+    sweet_spot_bonus: 1.08
+    near_band_factor: 0.95
+    stale_coding_factor: 0.85
+    no_production_factor: 0.80
+
+  penalties:
+    per_hop_penalty: 0.03
+    short_hop_penalty_cap: 0.15
+    q3_penalty_weight: 0.10
+    validation_floor: 0.1
+    closed_source_penalty_value: 0.05
+    title_ambiguous_penalty: 0.02
+    near_band_penalty: 0.02
+    consulting_heavy_penalty: 0.04
+
+  optional_bonus:
+    per_category_bonus: 0.02
+    optional_bonus_cap: 0.08
+    categories:
+      fine_tuning:
+        - lora
+        - qlora
+        - peft
+        - fine-tuning
+        - instruction tuning
+      learning_to_rank:
+        - learning-to-rank
+        - lambdamart
+        - ranknet
+        - xgboost ranking
+        - lightgbm ranking
+      hr_tech:
+        - ats
+        - applicant tracking
+        - recruiting
+        - marketplace
+        - talent
+      distributed_systems:
+        - distributed systems
+        - spark
+        - ray
+        - model serving
+        - triton
+        - quantization
+        - inference optimization
+      oss:
+        - open source
+        - opensource
+        - maintainer
+        - contributor
+
+  availability:
+    good_response_rate: 0.5
+    response_floor: 0.6
+    slow_response_hours: 24
+    response_decay_window_hours: 168
+    speed_floor: 0.7
+    fresh_days: 30
+    recency_decay_window: 180
+    recency_floor: 0.6
+    not_open_factor: 0.85
+    interview_floor: 0.7
+    offer_floor: 0.8
+    market_inactive_factor: 0.95
+    avail_min: 0.5
+
+  logistics:
+    loc_preferred_bonus: 0.03
+    loc_acceptable_bonus: 0.01
+    loc_outside_penalty: 0.10
+    workmode_fit_bonus: 0.01
+    workmode_remote_penalty: 0.02
+    notice_penalty_scale: 0.05
+    notice_penalty_cap: 0.08
+
+  enable_popularity_tiebreak: false
+  popularity_tiebreak_cap: 0.01

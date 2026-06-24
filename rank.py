@@ -19,10 +19,12 @@ import numpy as np
 from tracks.instructor.config import QUERY_WEIGHTS
 from tracks.instructor.io import load_index_and_id_map, load_jd_query_vector
 from tracks.instructor.stage1 import run_stage1_filter
-from tracks.shared.paths import ROOT_DIR
+from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE0_DIR, RUNTIME_STAGE1_DIR
 
 # --- edit before run ---
+# Full pipeline (100k): use RUNTIME_STAGE0_DIR + stage1_path=RUNTIME_STAGE1_DIR in retrieve()
 ARTIFACTS_PATH = ROOT_DIR / "artifacts" / "sample1k"
+STAGE1_PATH: Path | None = None  # None → artifacts_dir/stage1; full pipeline → RUNTIME_STAGE1_DIR
 RESULTS_PATH = ROOT_DIR / "test_output" / "retrieval" / "retrieval_results_sample1k.json"
 
 
@@ -106,15 +108,16 @@ def retrieve(
     k: int = 300,
     *,
     artifacts_dir: Path = ARTIFACTS_PATH,
+    stage1_path: Path | None = STAGE1_PATH,
     weights: tuple[float, float, float] | None = None,
     use_stage1_filter: bool = True,
 ) -> list[RetrievalHit]:
     """
     Run block-weighted vector retrieval against the precomputed index.
 
-    When use_stage1_filter is True, runs phase-B Stage 1 filter (loads precomputed
-    cluster artifacts from artifacts_dir/stage1/) and retrieves top-k only from
-    the filtered candidate pool. Run precompute_stage1_clustering() offline first.
+    When use_stage1_filter is True, runs phase-B Stage 1 filter and retrieves top-k
+    only from the filtered candidate pool. For the full pipeline use
+    artifacts_dir=RUNTIME_STAGE0_DIR and stage1_path=RUNTIME_STAGE1_DIR.
     """
     query_vector = load_jd_query_vector(artifacts_dir)
     if weights is not None and weights != QUERY_WEIGHTS:
@@ -123,6 +126,7 @@ def retrieve(
     if use_stage1_filter:
         stage1_run = run_stage1_filter(
             artifacts_dir,
+            stage1_path=stage1_path,
             anchor_vec=query_vector,
             print_summary=True,
             write_artifacts=False,
@@ -145,10 +149,10 @@ def retrieve_from_text(
     k: int = 10,
     **kwargs,
 ) -> list[RetrievalHit]:
-    """Online text encoding is not supported — JD query is precomputed in precompute.py."""
+    """Online text encoding is not supported — JD query is precomputed in Stage 0."""
     raise NotImplementedError(
         "retrieve_from_text requires runtime INSTRUCTOR encoding. "
-        "Use retrieve() with the precomputed jd_query_vec.npy from precompute.py."
+        "Use retrieve() with the precomputed jd_query_vec.npy from Stage 0 (tracks/instructor/stage0/run.py)."
     )
 
 

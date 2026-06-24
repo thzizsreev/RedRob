@@ -3,8 +3,8 @@
 Stage 1 cluster-based filtering test (two-phase).
 
 Mirrors the production entry scripts:
-    python stage1_cluster.py   # Phase A
-    python stage1.py           # Phase B
+    python tracks/instructor/stage1/run_cluster.py   # Phase A
+    python tracks/instructor/stage1/run_filter.py    # Phase B
 
 Run from project root (after precompute on the same sample):
     python tests/run_filtering_test.py

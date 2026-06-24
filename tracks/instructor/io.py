@@ -66,11 +66,11 @@ def load_index_and_id_map(
     if not index_path.exists():
         raise FileNotFoundError(
             f"Index not found: {index_path}. "
-            f"Run precompute.py (or python -m tracks.naive.precompute for {index_filename}) first."
+            f"Run tracks/instructor/stage0/run.py (or python -m tracks.naive.precompute for {index_filename}) first."
         )
     if not id_map_path.exists():
         raise FileNotFoundError(
-            f"ID map not found: {id_map_path}. Run precompute.py first."
+            f"ID map not found: {id_map_path}. Run tracks/instructor/stage0/run.py first."
         )
 
     index = faiss.read_index(str(index_path))
@@ -111,7 +111,7 @@ def load_jd_query_vector(artifacts_dir: Path) -> np.ndarray:
     query_path = artifacts_dir / JD_QUERY_VEC_FILENAME
     if not query_path.exists():
         raise FileNotFoundError(
-            f"JD query vector not found: {query_path}. Run precompute.py first."
+            f"JD query vector not found: {query_path}. Run tracks/instructor/stage0/run.py first."
         )
     vec = np.load(query_path).astype(np.float32)
     if vec.shape != (BLOCK_DIM * 3,):

@@ -17,35 +17,45 @@ data/candidates.jsonl.gz
 data/sample*.json
 !data/sample_candidates.json
 
-# Track A precompute + Stage 1 + rank outputs (rebuild locally)
-# Per-pool dirs: artifacts/sample1k/, sample5k/, candidates_full/, ...
-#   precompute.py:
-#     candidate_index.faiss, id_map.json, jd_query_vec.npy
-#   stage1_cluster.py (Phase A):
-#     stage1/candidate_vectors.npy, cluster_labels.npy, umap_reduced_12d.npy,
-#     cluster_manifest.json
-#   stage1.py (Phase B):
-#     stage1/filtered_ids.json, filtered_metadata.json, cluster_rankings.json,
-#     stage1_summary.json
-#   rank.py: retrieval_results.json (when written under the pool dir)
+# Track B instructor pipeline outputs (rebuild via tracks/instructor/stage{0..5}/run.py)
+#   artifacts/precomputed/: candidate_vectors.npy, bm25_index.pkl, candidate_features.parquet, ...
+#   artifacts/runtime/stage0/: FAISS index, id_map, cluster artifacts
+#   artifacts/runtime/stage1/: filtered_ids.json, filtered_metadata.json
+#   artifacts/runtime/stage2/: stage2_gated.parquet, stage2_summary.json, removed logs
+#   artifacts/runtime/stage3/: stage3_retrieved.parquet
+#   artifacts/runtime/stage4/: stage4_reranked.parquet, stage4_rank_delta.csv
+#   artifacts/runtime/stage5/: team_xxx.csv, stage5_scored.parquet, stage5_summary.json
 artifacts/*
 !artifacts/.gitkeep
 artifacts/**
 !artifacts/**/
 !artifacts/**/.gitkeep
 
+# Submission CSV if copied to repo root (canonical path: artifacts/runtime/stage5/)
+team_*.csv
+
 # INSTRUCTOR ONNX export output (regenerate: cd onnx && python export_to_onnx.py)
 onnx/models/**
 !onnx/models/
 !onnx/models/.gitkeep
 
-# Legacy scratch model dir at repo root (not onnx/models/)
-/models/
+# Cross-encoder ONNX export (regenerate: python models/export_cross_encoder.py)
+models/cross_encoder/**
+!models/cross_encoder/
+!models/cross_encoder/.gitkeep
+
+# Legacy scratch dirs under models/ (export script + requirements.txt stay tracked)
+models/encoder_test/
+models/instructor_large_onnx/
+models/ort_test/
 
 # Naive track generated outputs
 tracks/naive/artifacts/**
 !tracks/naive/artifacts/
 !tracks/naive/artifacts/.gitkeep
+
+# build_collection.py default output (outside repo, but ignore if created here)
+stage4_reranked_collection/
 
 # Local environment and secrets
 .env
@@ -61,6 +71,12 @@ test_output/**
 !test_output/
 !test_output/.gitkeep
 
+# K-means precompute + run outputs (kmeans/precompute.py, kmeans/run.py)
+kmeans/precomputed/**
+
+# K-means filter outputs (experimental Stage 1 alternative)
+data/filter_kmeans/
+
 # Editor / IDE
 .vscode/
 .cursor/
@@ -69,3 +85,8 @@ test_output/**
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Honeypot research pipeline outputs (LLM study — not production)
+honeypot/output/**
+!honeypot/output/
+!honeypot/output/.gitkeep

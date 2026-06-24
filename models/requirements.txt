@@ -1,0 +1,8 @@
+# Phase A — cross-encoder ONNX export only (offline; not in root requirements.txt)
+torch>=2.0.0
+transformers>=4.36.0
+onnx>=1.15.0
+onnxruntime>=1.16.0
+optimum[exporters-onnx]>=1.16.0
+onnxscript>=0.1.0
+protobuf>=3.20,<5

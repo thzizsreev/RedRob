@@ -63,6 +63,8 @@ JD_EVAL_TEXT = (
 JD_QUERY_VEC_FILENAME = "jd_query_vec.npy"
 INDEX_FILENAME = "candidate_index.faiss"
 ID_MAP_FILENAME = "id_map.json"
+CANDIDATE_VECTORS_FILENAME = "candidate_vectors.npy"
+BM25_INDEX_FILENAME = "bm25_index.pkl"
 
 INSTRUCTOR_ONNX_DIR = ROOT_DIR / "onnx" / "models"
 INSTRUCTOR_ONNX_ENCODER = INSTRUCTOR_ONNX_DIR / "instructor-large-encoder.onnx"

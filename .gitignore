@@ -54,6 +54,11 @@ team_results_view/**
 !team_results_view/
 !team_results_view/.gitkeep
 
+# Eliminations view outputs (regenerate: python build_eliminations_view.py)
+eliminations_view/output/**
+!eliminations_view/output/
+!eliminations_view/output/.gitkeep
+
 # Naive track generated outputs
 tracks/naive/artifacts/**
 !tracks/naive/artifacts/

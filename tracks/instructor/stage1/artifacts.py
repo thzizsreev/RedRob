@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     STAGE1_CANDIDATE_VECTORS_FILENAME,
     STAGE1_CLUSTER_LABELS_FILENAME,
     STAGE1_CLUSTER_MANIFEST_FILENAME,

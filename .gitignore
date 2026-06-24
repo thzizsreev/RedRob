@@ -49,6 +49,11 @@ models/encoder_test/
 models/instructor_large_onnx/
 models/ort_test/
 
+# Stage 5 team view outputs (regenerate: python build_team_view.py)
+team_results_view/**
+!team_results_view/
+!team_results_view/.gitkeep
+
 # Naive track generated outputs
 tracks/naive/artifacts/**
 !tracks/naive/artifacts/

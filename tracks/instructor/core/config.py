@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR
+from tracks.shared.paths import ROOT_DIR
 
 INSTRUCTOR_MODEL = "hkunlp/instructor-large"
 BLOCK_DIM = 768

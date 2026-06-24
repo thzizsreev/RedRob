@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from tracks.instructor.index import build_vector_index, build_vector_index_from_records
+from tracks.instructor.core.index import build_vector_index, build_vector_index_from_records
 from tracks.instructor.stage0.bm25_precompute import build_bm25_index
 
 

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from sklearn.metrics import silhouette_score
 
-from tracks.instructor.clustering import assign_cluster_labels, min_cluster_size
+from tracks.instructor.stage1.clustering import assign_cluster_labels, min_cluster_size
 
 
 @dataclass(frozen=True)

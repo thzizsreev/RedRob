@@ -9,7 +9,7 @@ from pathlib import Path
 
 import polars as pl
 
-from tracks.instructor.io import iter_candidates_from_path
+from tracks.instructor.core.io import iter_candidates_from_path
 from tracks.instructor.stage5.config import Stage5Config
 
 REQUIRED_STAGE4_COLUMNS = frozenset(

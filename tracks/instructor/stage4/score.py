@@ -28,7 +28,8 @@ def _preflight_model(config: Stage4Config) -> None:
         raise FileNotFoundError(
             "Cross-encoder ONNX artifacts missing. Run Phase A first:\n"
             "  pip install -r models/requirements.txt\n"
-            "  python models/export_cross_encoder.py\n"
+            "  python tracks/instructor/stage0/run_cross_encoder.py\n"
+            "  # or: python models/export_cross_encoder.py\n"
             + "\n".join(missing)
         )
 

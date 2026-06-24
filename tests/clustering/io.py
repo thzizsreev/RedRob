@@ -7,8 +7,8 @@ from pathlib import Path
 
 import numpy as np
 
-from tracks.instructor.config import INDEX_FILENAME, VECTOR_DIM
-from tracks.instructor.io import (
+from tracks.instructor.core.config import INDEX_FILENAME, VECTOR_DIM
+from tracks.instructor.core.io import (
     load_candidates_json,
     load_vectors_from_artifacts,
 )

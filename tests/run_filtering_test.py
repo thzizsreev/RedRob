@@ -21,14 +21,14 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tracks.instructor.config import STAGE1_FLOOR, STAGE1_DIRNAME
+from tracks.instructor.core.config import STAGE1_FLOOR, STAGE1_DIRNAME
 from tracks.instructor.stage1 import (
     precompute_stage1_clustering,
     print_stage1_summary,
     run_stage1_filter,
 )
-from tracks.instructor.config import INDEX_FILENAME as INSTRUCTOR_INDEX
-from tracks.instructor.config import VECTOR_DIM as INSTRUCTOR_VECTOR_DIM
+from tracks.instructor.core.config import INDEX_FILENAME as INSTRUCTOR_INDEX
+from tracks.instructor.core.config import VECTOR_DIM as INSTRUCTOR_VECTOR_DIM
 from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR
 
 # --- edit before run ---

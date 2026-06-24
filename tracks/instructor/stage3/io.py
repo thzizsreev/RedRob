@@ -13,12 +13,12 @@ import numpy as np
 import polars as pl
 from rank_bm25 import BM25Okapi
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     BM25_INDEX_FILENAME,
     CANDIDATE_VECTORS_FILENAME,
     VECTOR_DIM,
 )
-from tracks.instructor.io import load_index_and_id_map, load_vectors_from_artifacts
+from tracks.instructor.core.io import load_index_and_id_map, load_vectors_from_artifacts
 from tracks.instructor.stage3.config import Stage3Config
 
 REQUIRED_STAGE2_COLUMNS = frozenset(

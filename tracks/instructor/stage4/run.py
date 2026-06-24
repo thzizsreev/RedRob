@@ -4,7 +4,8 @@ Stage 4 — Cross-encoder reranking (Phase B, CPU ONNX).
 
 Requires Phase A export first:
     pip install -r models/requirements.txt
-    python models/export_cross_encoder.py
+    python tracks/instructor/stage0/run_cross_encoder.py
+    # or: python models/export_cross_encoder.py
 
 Then run after Stage 3:
     python tracks/instructor/stage4/run.py

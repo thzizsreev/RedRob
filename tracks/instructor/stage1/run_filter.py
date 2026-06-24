@@ -2,7 +2,7 @@
 """
 Stage 1 Phase B — rank clusters and filter to floor.
 
-Requires Phase A artifacts from run_cluster.py. Edit ARTIFACTS_PATH below.
+Requires Phase A cluster artifacts from stage0/run_cluster.py (or this shim). Edit ARTIFACTS_PATH below.
 
     python tracks/instructor/stage1/run_filter.py
 
@@ -23,7 +23,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tracks.instructor.config import STAGE1_RANDOM_SEED
+from tracks.instructor.core.config import STAGE1_RANDOM_SEED
 from tracks.instructor.stage1 import run_stage1_filter
 from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE0_DIR, RUNTIME_STAGE1_DIR
 

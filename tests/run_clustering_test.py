@@ -18,8 +18,8 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from tests.clustering.pipeline import run_clustering_pipeline
-from tracks.instructor.config import INDEX_FILENAME as INSTRUCTOR_INDEX
-from tracks.instructor.config import VECTOR_DIM as INSTRUCTOR_VECTOR_DIM
+from tracks.instructor.core.config import INDEX_FILENAME as INSTRUCTOR_INDEX
+from tracks.instructor.core.config import VECTOR_DIM as INSTRUCTOR_VECTOR_DIM
 from tracks.naive.config import (
     NAIVE_ARTIFACTS_DIR,
     NAIVE_INDEX_FILENAME,

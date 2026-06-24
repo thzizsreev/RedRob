@@ -11,8 +11,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from tracks.instructor.config import STAGE1_CLUSTER_LABELS_FILENAME, STAGE1_UMAP_REDUCED_FILENAME
-from tracks.instructor.io import iter_candidates_from_path, load_candidate_ids_from_id_map
+from tracks.instructor.core.config import STAGE1_CLUSTER_LABELS_FILENAME, STAGE1_UMAP_REDUCED_FILENAME
+from tracks.instructor.core.io import iter_candidates_from_path, load_candidate_ids_from_id_map
 
 KMEANS_CLUSTER_LABELS_FILENAME = "cluster_labels.npy"
 KMEANS_UMAP_CLUSTERING_FILENAME = "umap_clustering_15d.npy"
@@ -74,7 +74,7 @@ def compute_dist_to_centroid(
         warnings.warn(
             f"No cluster_labels/UMAP artifacts found for {stage1_path}. "
             "dist_to_centroid will be null for all survivors. "
-            "For HDBSCAN: run tracks/instructor/stage1/run_cluster.py. "
+            "For HDBSCAN: run tracks/instructor/stage0/run_cluster.py. "
             "For K-means: run kmeans/test/run.py then kmeans/filter/run.py.",
             stacklevel=2,
         )

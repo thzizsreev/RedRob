@@ -7,7 +7,7 @@ from pathlib import Path
 
 from rank_bm25 import BM25Okapi
 
-from tracks.instructor.config import BM25_INDEX_FILENAME
+from tracks.instructor.core.config import BM25_INDEX_FILENAME
 from tracks.instructor.stage3.jargon import build_jargon_text, tokenize_jargon
 
 

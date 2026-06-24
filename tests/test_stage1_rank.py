@@ -6,12 +6,12 @@ import statistics
 
 import numpy as np
 
-from tracks.instructor.filtering.rank import (
+from tracks.instructor.stage1.filtering.rank import (
     compute_anchor_similarities,
     rank_clusters_by_anchor_similarity,
     rank_clusters_from_similarities,
 )
-from tracks.instructor.filtering.similarity import compute_candidate_similarity
+from tracks.instructor.stage1.filtering.similarity import compute_candidate_similarity
 
 
 def test_vectorized_rank_matches_loop() -> None:

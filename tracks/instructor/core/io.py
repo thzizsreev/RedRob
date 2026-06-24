@@ -10,7 +10,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from tracks.instructor.config import ID_MAP_FILENAME, INDEX_FILENAME, VECTOR_DIM
+from tracks.instructor.core.config import ID_MAP_FILENAME, INDEX_FILENAME, VECTOR_DIM
 
 
 def _open_candidates(path: Path):
@@ -106,7 +106,7 @@ def load_vectors_from_artifacts(
 
 
 def load_jd_query_vector(artifacts_dir: Path) -> np.ndarray:
-    from tracks.instructor.config import BLOCK_DIM, JD_QUERY_VEC_FILENAME
+    from tracks.instructor.core.config import BLOCK_DIM, JD_QUERY_VEC_FILENAME
 
     query_path = artifacts_dir / JD_QUERY_VEC_FILENAME
     if not query_path.exists():

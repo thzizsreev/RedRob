@@ -6,7 +6,7 @@ import faiss
 import numpy as np
 from transformers import AutoTokenizer
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     BLOCK_DIM,
     EVAL_INSTRUCTION,
     INFRA_INSTRUCTION,
@@ -20,7 +20,7 @@ from tracks.instructor.config import (
     RETRIEVAL_INSTRUCTION,
     VECTOR_DIM,
 )
-from tracks.instructor.onnx_embedder import InstructorONNX
+from tracks.instructor.core.onnx_embedder import InstructorONNX
 
 
 def _batch_sizes_to_try(primary: int) -> list[int]:

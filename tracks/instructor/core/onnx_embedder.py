@@ -8,7 +8,7 @@ import numpy as np
 import onnxruntime as ort
 from transformers import AutoTokenizer
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     CUDA_PROVIDER,
     INSTRUCTOR_ONNX_CONFIG,
     INSTRUCTOR_ONNX_DENSE,

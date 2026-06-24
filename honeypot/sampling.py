@@ -181,7 +181,7 @@ def _classify_stratum_b(record: dict[str, Any]) -> list[str]:
 
 
 def load_candidates_dict(candidates_path: Path) -> dict[str, dict[str, Any]]:
-    from tracks.instructor.io import iter_candidates_from_path
+    from tracks.instructor.core.io import iter_candidates_from_path
 
     records: dict[str, dict[str, Any]] = {}
     for record in iter_candidates_from_path(candidates_path):

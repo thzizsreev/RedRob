@@ -16,8 +16,8 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from tracks.instructor.config import QUERY_WEIGHTS
-from tracks.instructor.io import load_index_and_id_map, load_jd_query_vector
+from tracks.instructor.core.config import QUERY_WEIGHTS
+from tracks.instructor.core.io import load_index_and_id_map, load_jd_query_vector
 from tracks.instructor.stage1 import run_stage1_filter
 from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE0_DIR, RUNTIME_STAGE1_DIR
 

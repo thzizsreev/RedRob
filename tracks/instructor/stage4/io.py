@@ -8,8 +8,8 @@ from pathlib import Path
 
 import polars as pl
 
-from tracks.instructor.extraction import build_candidate_passage
-from tracks.instructor.io import iter_candidates_from_path
+from tracks.instructor.core.extraction import build_candidate_passage
+from tracks.instructor.core.io import iter_candidates_from_path
 from tracks.instructor.stage4.config import Stage4Config
 
 REQUIRED_STAGE3_COLUMNS = frozenset(

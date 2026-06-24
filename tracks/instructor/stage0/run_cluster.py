@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Backward-compatible shim — prefer tracks/instructor/stage0/run_cluster.py.
+Stage 0 — cluster precompute (UMAP + HDBSCAN).
 
-Stage 1 Phase A — cluster precompute (UMAP + HDBSCAN).
+Run once per candidate pool after Stage 0 vector precompute (run.py).
 
-Run once per candidate pool after Stage 0 vector precompute.
+    python tracks/instructor/stage0/run_cluster.py
 
-    python tracks/instructor/stage1/run_cluster.py
+Inputs:
+  STAGE0_PATH   artifacts/runtime/stage0/  (FAISS index + vectors)
 
 Outputs (under STAGE1_PATH = artifacts/runtime/stage1/):
   candidate_vectors.npy
@@ -14,7 +15,7 @@ Outputs (under STAGE1_PATH = artifacts/runtime/stage1/):
   umap_reduced_12d.npy
   cluster_manifest.json
 
-Then run run_filter.py (Phase B) to rank clusters and write filtered JSON artifacts.
+Then run tracks/instructor/stage1/run_filter.py (Phase B).
 """
 
 from __future__ import annotations
@@ -47,7 +48,7 @@ def main() -> None:
         overwrite=OVERWRITE,
     )
     elapsed = perf_counter() - start_time
-    print(f"Stage 1 cluster precompute completed in {elapsed:.2f} seconds")
+    print(f"Stage 0 cluster precompute completed in {elapsed:.2f} seconds")
 
 
 if __name__ == "__main__":

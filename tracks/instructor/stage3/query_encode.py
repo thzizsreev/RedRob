@@ -5,13 +5,13 @@ from __future__ import annotations
 import faiss
 import numpy as np
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     EVAL_INSTRUCTION,
     INFRA_INSTRUCTION,
     RETRIEVAL_INSTRUCTION,
     VECTOR_DIM,
 )
-from tracks.instructor.onnx_embedder import InstructorONNX
+from tracks.instructor.core.onnx_embedder import InstructorONNX
 from tracks.instructor.stage3.config import Stage3Config, SubspaceWeights
 
 

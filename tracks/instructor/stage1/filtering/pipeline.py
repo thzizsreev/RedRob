@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     STAGE1_FLOOR,
     STAGE1_HDBSCAN_CORE_DIST_N_JOBS,
     STAGE1_RANDOM_SEED,

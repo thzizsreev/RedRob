@@ -12,7 +12,7 @@ from tests.clustering.persist import persist_artifacts
 from tests.clustering.reduce import reduce_embeddings
 from tests.clustering.sampling import stratified_sample
 from tests.clustering.visualize import write_cluster_plot, write_landmark_plot
-from tracks.instructor.config import INDEX_FILENAME, VECTOR_DIM
+from tracks.instructor.core.config import INDEX_FILENAME, VECTOR_DIM
 
 
 def run_clustering_pipeline(

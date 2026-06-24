@@ -29,7 +29,7 @@ from kmeans.precompute_artifacts import (
 )
 from kmeans.test.reduce import reduce_embeddings
 from kmeans.test.sampling import Sample, subsample_inputs
-from tracks.instructor.config import INDEX_FILENAME, VECTOR_DIM
+from tracks.instructor.core.config import INDEX_FILENAME, VECTOR_DIM
 from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, SAMPLE1K_PATH, CANDIDATES_JSONL_PATH
 
 # --- edit before run ---

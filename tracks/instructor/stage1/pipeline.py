@@ -16,7 +16,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 if __package__ is None and str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     INDEX_FILENAME,
     STAGE1_FLOOR,
     STAGE1_HDBSCAN_CORE_DIST_N_JOBS,
@@ -26,7 +26,7 @@ from tracks.instructor.config import (
     UMAP_N_NEIGHBORS,
     VECTOR_DIM,
 )
-from tracks.instructor.io import (
+from tracks.instructor.core.io import (
     load_candidate_ids_from_id_map,
     load_jd_query_vector,
     load_vectors_from_artifacts,

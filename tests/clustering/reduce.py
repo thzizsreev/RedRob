@@ -8,8 +8,8 @@ import numpy as np
 from sklearn.decomposition import PCA
 import umap
 
-from tracks.instructor.clustering import reduce_for_clustering
-from tracks.instructor.config import UMAP_CLUSTERING_DIMS, UMAP_N_NEIGHBORS
+from tracks.instructor.stage1.clustering import reduce_for_clustering
+from tracks.instructor.core.config import UMAP_CLUSTERING_DIMS, UMAP_N_NEIGHBORS
 
 
 @dataclass(frozen=True)

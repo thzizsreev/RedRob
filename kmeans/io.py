@@ -7,8 +7,8 @@ from pathlib import Path
 
 import numpy as np
 
-from tracks.instructor.config import INDEX_FILENAME, VECTOR_DIM
-from tracks.instructor.io import (
+from tracks.instructor.core.config import INDEX_FILENAME, VECTOR_DIM
+from tracks.instructor.core.io import (
     load_candidates_json,
     load_index_and_id_map,
     load_vectors_from_artifacts,
@@ -101,6 +101,6 @@ def load_vectors_for_candidate_ids(
 
 
 def load_anchor_vector(artifacts_path: Path) -> np.ndarray:
-    from tracks.instructor.io import load_jd_query_vector
+    from tracks.instructor.core.io import load_jd_query_vector
 
     return load_jd_query_vector(artifacts_path)

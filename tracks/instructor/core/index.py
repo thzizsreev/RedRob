@@ -10,7 +10,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from tracks.instructor.config import (
+from tracks.instructor.core.config import (
     CANDIDATE_VECTORS_FILENAME,
     EMPTY_BLOCK_TEXT,
     ID_MAP_FILENAME,
@@ -22,15 +22,15 @@ from tracks.instructor.config import (
     VECTOR_DIM,
     resolve_passage_prep_workers,
 )
-from tracks.instructor.encode import (
+from tracks.instructor.core.encode import (
     build_jd_query_vector,
     encode_candidates,
     load_tokenizer,
     log_encode_plan,
 )
-from tracks.instructor.extraction import build_candidate_passage, truncate_passage
-from tracks.instructor.io import iter_candidates_from_path
-from tracks.instructor.onnx_embedder import InstructorONNX
+from tracks.instructor.core.extraction import build_candidate_passage, truncate_passage
+from tracks.instructor.core.io import iter_candidates_from_path
+from tracks.instructor.core.onnx_embedder import InstructorONNX
 
 
 def _prepare_passage(record: dict, tokenizer) -> str:

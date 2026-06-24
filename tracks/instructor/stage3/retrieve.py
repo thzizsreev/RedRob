@@ -8,7 +8,7 @@ from time import perf_counter
 
 import polars as pl
 
-from tracks.instructor.onnx_embedder import load_embedder, unload_embedder
+from tracks.instructor.core.onnx_embedder import load_embedder, unload_embedder
 from tracks.instructor.stage3.config import Stage3Config, load_stage3_config
 from tracks.instructor.stage3.dense_retrieve import (
     build_id_selector,

@@ -1,11 +1,10 @@
-"""Ranking-plan skill/date honeypot rules H3, H4, H5."""
+"""Ranking-plan skill/date honeypot rules H3, H4 (skill_years_ceiling), H5."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 
-from tracks.instructor.stage2.config import Stage2Config
+from tracks.instructor.stage2.config import HoneypotConfig, Stage2Config
 from tracks.instructor.stage2.honeypot_rules import _parse_date
 
 
@@ -14,6 +13,61 @@ class SkillHoneypotEvaluation:
     exclude: bool
     rules_fired: list[str]
     details: dict
+
+
+def _skill_years_ceiling(yoe: float, hp: HoneypotConfig) -> float:
+    return max(
+        yoe * hp.max_skill_overshoot_factor,
+        yoe + hp.early_career_skill_buffer_years,
+    )
+
+
+def _rule_skill_years_ceiling(
+    skills: list[dict],
+    total_years_exp: float | None,
+    hp: HoneypotConfig,
+) -> tuple[bool, dict | None]:
+    worst: dict | None = None
+    worst_overshoot = 0.0
+
+    for skill in skills:
+        duration = skill.get("duration_months")
+        if duration is None:
+            continue
+        try:
+            skill_years = int(duration) / 12.0
+        except (TypeError, ValueError):
+            continue
+        skill_name = str(skill.get("name", ""))
+
+        if skill_years > hp.max_skill_years_absolute:
+            overshoot = skill_years - hp.max_skill_years_absolute
+            if overshoot > worst_overshoot:
+                worst_overshoot = overshoot
+                worst = {
+                    "skill": skill_name,
+                    "skill_years": round(skill_years, 2),
+                    "total_years_exp": total_years_exp,
+                    "ceiling_years": None,
+                    "violation": "absolute",
+                }
+            continue
+
+        if total_years_exp is not None:
+            ceiling = _skill_years_ceiling(float(total_years_exp), hp)
+            if skill_years > ceiling:
+                overshoot = skill_years - ceiling
+                if overshoot > worst_overshoot:
+                    worst_overshoot = overshoot
+                    worst = {
+                        "skill": skill_name,
+                        "skill_years": round(skill_years, 2),
+                        "total_years_exp": total_years_exp,
+                        "ceiling_years": round(ceiling, 2),
+                        "violation": "ceiling",
+                    }
+
+    return worst is not None, worst
 
 
 def evaluate_skill_honeypot(record: dict, config: Stage2Config) -> SkillHoneypotEvaluation:
@@ -48,24 +102,15 @@ def evaluate_skill_honeypot(record: dict, config: Stage2Config) -> SkillHoneypot
             "skills": expert_zero_skills[:10],
         }
 
-    if total_years_exp is not None:
-        max_skill_years = 0.0
-        max_skill_name = ""
-        for skill in skills:
-            duration = skill.get("duration_months")
-            if duration is None:
-                continue
-            years = int(duration) / 12.0
-            if years > max_skill_years:
-                max_skill_years = years
-                max_skill_name = str(skill.get("name", ""))
-        if max_skill_years > float(total_years_exp) + config.skill_years_slack:
-            rules_fired.append("skill_years_impossible")
-            details["skill_years_impossible"] = {
-                "max_skill_years": round(max_skill_years, 2),
-                "total_years_exp": total_years_exp,
-                "skill": max_skill_name,
-            }
+    # H4 skill_years_ceiling — tiered ceiling vs YOE + absolute cap.
+    # Replaces retired skill_years_impossible (max skill > YOE + slack).
+    fired, detail = _rule_skill_years_ceiling(
+        skills, total_years_exp, config.honeypot
+    )
+    if fired:
+        rules_fired.append("skill_years_ceiling")
+        if detail:
+            details["skill_years_ceiling"] = detail
 
     for i, role in enumerate(career_history):
         start = _parse_date(role.get("start_date"))

@@ -34,7 +34,7 @@ from tracks.shared.paths import (
 
 DEFAULT_CSV = RUNTIME_STAGE5_DIR / "team_xxx.csv"
 DEFAULT_STAGE5_PARQUET = RUNTIME_STAGE5_DIR / "stage5_scored_top100.parquet"
-DEFAULT_OUT_DIR = ROOT_DIR / "team_results_view"
+DEFAULT_OUT_DIR = ROOT_DIR / "team_results_view_honeypot3"
 
 PIPELINE_SCORE_KEYS = (
     "stage3_rank",

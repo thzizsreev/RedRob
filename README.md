@@ -11,56 +11,183 @@ Hackathon submission system for ranking ~100,000 AI-engineering candidates again
 
 ## 1) How to Run
 
-### A. One-time prerequisites (per environment)
+### A. Offline precompute — what, why, and how
 
-Export model weights once before any encoding or reranking:
+Everything below runs **outside** `run_pipeline.py`. Stages 1–5 only **read** these artifacts; they do not rebuild embeddings or clusters unless you re-run the offline steps.
 
-```bash
-cd onnx && python export_to_onnx.py          # INSTRUCTOR ONNX → onnx/models/
-pip install -r models/requirements.txt
-python tracks/instructor/stage0/run_cross_encoder.py   # skip if models/cross_encoder/ exists
+```text
+Dependency order (run top → bottom):
+
+  [once per machine]     onnx/export_to_onnx.py
+                              ↓
+  [once per pool]        stage0/run.py          ← precompute.py (vectors + FAISS + BM25)
+                              ↓
+  [once per pool]        stage0/run_cluster.py  ← UMAP + HDBSCAN
+                              ↓
+  [fast loop]            run_pipeline.py        ← stages 1–5
+
+  [once per machine]     stage0/run_cross_encoder.py   ← independent; needed before Stage 4
 ```
 
-- **INSTRUCTOR embedder** (Stages 0 and 3): requires `onnxruntime-gpu`, CUDA, and exported weights under `onnx/models/`.
-- **Cross-encoder** (Stage 4): CPU ONNX under `models/cross_encoder/`; export is independent of the candidate pool.
+#### Checklist before `run_pipeline.py`
 
-ONNX smoke test: `python onnx/run_encode.py`
+| Step | Command | Required? | When to skip |
+|------|---------|-----------|--------------|
+| 1. INSTRUCTOR ONNX | `cd onnx && python export_to_onnx.py` | Yes (Stages 0 & 3) | `onnx/models/instructor-large-encoder.onnx` already exists |
+| 2. Vector precompute | `python tracks/instructor/stage0/run.py` | Yes (Stages 1–3) | All files in `artifacts/runtime/stage0/` present |
+| 3. Cluster precompute | `python tracks/instructor/stage0/run_cluster.py` | Yes (Stage 1) | `cluster_labels.npy` etc. in `artifacts/runtime/stage1/` |
+| 4. Cross-encoder ONNX | `python tracks/instructor/stage0/run_cross_encoder.py` | Yes (Stage 4) | `models/cross_encoder/model.onnx` exists |
+| 5. Ranking pipeline | `python tracks/instructor/run_pipeline.py` | — | — |
 
-### B. One-time offline precompute (per candidate pool)
+---
 
-Run when `data/candidates.jsonl` changes or you need to rebuild embeddings. **Do not** include these in the fast ranking loop — `stage0/run.py` always re-encodes the full pool if rerun.
+#### Step 1 — INSTRUCTOR ONNX export (once per machine)
 
-```bash
-python tracks/instructor/stage0/run.py           # 100K encode + FAISS + BM25 → artifacts/runtime/stage0/
-python tracks/instructor/stage0/run_cluster.py   # UMAP + HDBSCAN → artifacts/runtime/stage1/*.npy
+| | |
+|---|---|
+| **Command** | `cd onnx && pip install -r requirements.txt && python export_to_onnx.py` |
+| **Script** | [`onnx/export_to_onnx.py`](onnx/export_to_onnx.py) |
+| **GPU?** | No (CPU export with PyTorch + `InstructorEmbedding`) |
+| **Outputs** | `onnx/models/instructor-large-encoder.onnx`, `dense_weight.npy`, `tokenizer/`, `config.txt` |
+
+**What it does:** Downloads `hkunlp/instructor-large`, exports the T5 **encoder** to ONNX. Instruction masking, mean pooling, dense projection, and L2 normalization still run in Python at inference time ([`tracks/instructor/core/onnx_embedder.py`](tracks/instructor/core/onnx_embedder.py)).
+
+**Why it's needed:** Step 2 (`run.py`) and Stage 3 retrieval call `load_embedder()`, which fails fast if ONNX weights are missing.
+
+**Smoke test:** `python onnx/run_encode.py` (expects CUDA `onnxruntime-gpu`).
+
+---
+
+#### Step 2 — Vector + FAISS + BM25 precompute (once per candidate pool)
+
+| | |
+|---|---|
+| **Command** | `python tracks/instructor/stage0/run.py` |
+| **Core logic** | [`tracks/instructor/stage0/precompute.py`](tracks/instructor/stage0/precompute.py) (called by `run.py`) |
+| **Prerequisite** | Step 1 (ONNX weights) |
+| **GPU?** | Yes — `onnxruntime-gpu` + CUDA |
+| **Default input** | `data/candidates.jsonl` (~100K pool) |
+| **Default output** | `artifacts/runtime/stage0/` |
+
+**What it does:**
+
+1. Streams every candidate from the JSONL (or JSON array) file.
+2. Builds a passage per candidate (career descriptions + summary; see [`core/extraction.py`](tracks/instructor/core/extraction.py)).
+3. **3-pass INSTRUCTOR encoding** — same passage under retrieval / infra / eval instructions → three 768-d blocks concatenated to **2304-d** ([`core/encode.py`](tracks/instructor/core/encode.py)).
+4. Builds a **FAISS** `IndexFlatIP` over all vectors + `id_map.json` (row index → `CAND_*` id).
+5. Saves `candidate_vectors.npy` and precomputed **JD query vector** `jd_query_vec.npy`.
+6. Builds **BM25** jargon index (`bm25_index.pkl`) aligned row-for-row with FAISS, using `stage3.q4_tokens` from `config.yaml`.
+
+**Why it's needed:**
+
+| Artifact | Used by |
+|----------|---------|
+| `candidate_index.faiss` + `id_map.json` | Stage 1 (anchor similarity), Stage 3 (dense Q1/Q2) |
+| `candidate_vectors.npy` | Stage 1 clustering, Stage 3 Q3 penalty |
+| `jd_query_vec.npy` | Stage 1 cluster ranking (JD anchor) |
+| `bm25_index.pkl` | Stage 3 sparse Q4 retrieval |
+
+**Edit before run** ([`tracks/instructor/stage0/run.py`](tracks/instructor/stage0/run.py)):
+
+```python
+from tracks.shared.paths import SAMPLE5K_PATH  # or SAMPLE10K_PATH, etc.
+
+CANDIDATES_PATH = CANDIDATES_JSONL_PATH   # default: full 100K pool
+OUTPUT_DIR = RUNTIME_STAGE0_DIR           # default: artifacts/runtime/stage0/
 ```
 
-Edit `CANDIDATES_PATH` / `OUTPUT_DIR` in [`tracks/instructor/stage0/run.py`](tracks/instructor/stage0/run.py) if not using defaults.
+Use a smaller JSON/JSONL file (e.g. `data/sample5k.json`) for dev — there is **no built-in limit**; the script processes the entire file you point at.
 
-**Stage 0 outputs** (`artifacts/runtime/stage0/`):
+**Outputs** (`artifacts/runtime/stage0/`):
 
-- `candidate_index.faiss`, `id_map.json`, `candidate_vectors.npy`, `jd_query_vec.npy`, `bm25_index.pkl`
+- `candidate_index.faiss` — FAISS index, dim 2304
+- `id_map.json` — FAISS row → `candidate_id`
+- `candidate_vectors.npy` — `(N, 2304)` float32
+- `jd_query_vec.npy` — block-weighted JD query vector
+- `bm25_index.pkl` — BM25 corpus, N documents
 
-**Cluster outputs** (`artifacts/runtime/stage1/`):
+**Typical runtime:** Dominated by 3 encode passes × N candidates (hours at 100K on GPU).
 
-- `cluster_labels.npy`, `umap_reduced_12d.npy`, `cluster_manifest.json`, `candidate_vectors.npy`
+---
 
-### C. Fast ranking loop (repeat anytime)
+#### Step 3 — Cluster precompute (once per candidate pool, after Step 2)
 
-Stages 1–5 read precomputed artifacts and `config.yaml`. Use this loop to tune gate rules, retrieval weights, or scoring formula without re-encoding 100K candidates.
+| | |
+|---|---|
+| **Command** | `python tracks/instructor/stage0/run_cluster.py` |
+| **Core logic** | [`tracks/instructor/stage0/cluster_precompute.py`](tracks/instructor/stage0/cluster_precompute.py) → [`stage1/pipeline.py`](tracks/instructor/stage1/pipeline.py) |
+| **Prerequisite** | Step 2 (`candidate_index.faiss` in `STAGE0_PATH`) |
+| **GPU?** | No (UMAP + HDBSCAN on CPU) |
+| **Default paths** | Input: `artifacts/runtime/stage0/` → Output: `artifacts/runtime/stage1/` |
 
-**Recommended — full pipeline in one command:**
+**What it does:**
+
+1. Reconstructs all candidate vectors from the FAISS index.
+2. **UMAP** reduction: 2304-d → 12-d (cosine metric).
+3. **HDBSCAN** clustering in reduced space (`min_cluster_size = max(15, 1.5% × N)`).
+4. Writes cluster labels and manifest to `artifacts/runtime/stage1/`.
+
+**Why it's needed:** Stage 1 does **cluster-atomic filtering** — it ranks clusters by median JD similarity and walks whole clusters until a floor count is met. Without these `.npy` files, `run_pipeline.py` cannot run Stage 1.
+
+**Edit before run** ([`tracks/instructor/stage0/run_cluster.py`](tracks/instructor/stage0/run_cluster.py)):
+
+```python
+STAGE0_PATH = RUNTIME_STAGE0_DIR    # must match Step 2 output
+STAGE1_PATH = RUNTIME_STAGE1_DIR
+OVERWRITE = False                   # set True to rebuild existing clusters
+```
+
+If cluster artifacts already exist and `OVERWRITE = False`, the script raises `Stage1ClusterArtifactsExistError` — that means Step 3 is **already done**; skip to `run_pipeline.py`.
+
+**Outputs** (`artifacts/runtime/stage1/` — Phase A only):
+
+- `candidate_vectors.npy` — copy of vectors `(N, 2304)`
+- `cluster_labels.npy` — HDBSCAN label per candidate (`-1` = noise)
+- `umap_reduced_12d.npy` — UMAP embedding
+- `cluster_manifest.json` — hyperparameters and `n_candidates`
+
+Phase B filter outputs (`filtered_ids.json`, etc.) are written by Stage 1 inside `run_pipeline.py` or by [`stage1/run_filter.py`](tracks/instructor/stage1/run_filter.py) standalone.
+
+---
+
+#### Step 4 — Cross-encoder ONNX export (once per machine, before Stage 4)
+
+| | |
+|---|---|
+| **Command** | `pip install -r models/requirements.txt && python tracks/instructor/stage0/run_cross_encoder.py` |
+| **Alt** | `python models/export_cross_encoder.py` (shim to same code) |
+| **Core logic** | [`tracks/instructor/stage0/cross_encoder_export.py`](tracks/instructor/stage0/cross_encoder_export.py) |
+| **Prerequisite** | None (independent of candidate pool) |
+| **GPU?** | No |
+| **Default output** | `models/cross_encoder/` |
+
+**What it does:** Exports `cross-encoder/ms-marco-MiniLM-L-6-v2` (or `stage4.model_id` from `config.yaml`) to ONNX + saves tokenizer.
+
+**Why it's needed:** Stage 4 scores `(JD, candidate)` pairs with this model. `run_pipeline.py` does not export it for you.
+
+**Outputs:**
+
+- `models/cross_encoder/model.onnx`
+- `models/cross_encoder/tokenizer/`
+
+`SKIP_IF_EXISTS = True` by default in `run_cross_encoder.py` — safe to re-run.
+
+---
+
+#### Step 5 — Fast ranking loop (repeat anytime)
+
+After Steps 1–4 artifacts exist on disk:
 
 ```bash
 python tracks/instructor/run_pipeline.py
 ```
 
-Prints per-stage summaries and a timing table; final output: `artifacts/runtime/stage5/{team_id}.csv` (100 rows).
+Runs Stage 1 filter → Stage 2 gate → Stage 3 retrieve → Stage 4 rerank → Stage 5 score. Does **not** re-encode 100K candidates or rebuild clusters.
 
 **Or run stages individually** (same behavior, useful for debugging):
 
 ```bash
-python tracks/instructor/stage1/run_filter.py
+python tracks/instructor/stage1/run_filter.py   # optional; pipeline runs filter in-memory too
 python tracks/instructor/stage2/run.py
 python tracks/instructor/stage3/run.py
 python tracks/instructor/stage4/run.py
@@ -90,7 +217,26 @@ print(result.final_csv_path, result.total_elapsed_seconds)
 
 **Configuration:** [`config.yaml`](config.yaml) at repo root drives stages 2–5 (`stage2:`, `stage3:`, `stage4:`, `stage5:` blocks). Stage 0–1 constants live in [`tracks/instructor/core/config.py`](tracks/instructor/core/config.py).
 
-### Naive baseline (comparison track)
+#### What to re-run when something changes
+
+| If you change… | Re-run from… |
+|----------------|--------------|
+| `candidates.jsonl` or INSTRUCTOR encoding | Step 2 `run.py` → Step 3 `run_cluster.py` → `run_pipeline.py` |
+| UMAP/HDBSCAN parameters only | Step 3 `run_cluster.py` (`OVERWRITE = True`) → `run_pipeline.py` |
+| `stage2:` config (gates, honeypot rules) | `run_pipeline.py` (stages 2–5) or stage 2 onward |
+| `stage3:` queries, weights, cutoff | stages 3–5 |
+| Cross-encoder model or `keep_n` | Step 4 if model changed; then stages 4–5 |
+| `stage5:` formula / weights only | stage 5 |
+
+#### Environment notes
+
+- **INSTRUCTOR embedder** (Steps 2 & Stage 3): `pip install -r requirements.txt` — needs `onnxruntime-gpu` and CUDA. Do not install CPU `onnxruntime` alongside GPU build.
+- **ONNX export** (Step 1): separate env under `onnx/requirements.txt` (PyTorch + `InstructorEmbedding`).
+- **Cross-encoder export** (Step 4): `models/requirements.txt`.
+
+---
+
+### B. Naive baseline (comparison track)
 
 ```bash
 python -m tracks.naive.precompute
@@ -404,18 +550,7 @@ run_pipeline.py
 - `stage4:` — JD text for cross-encoder, `keep_n`, batch size
 - `stage5:` — core weights, must-have keywords, penalty/bonus/logistics coefficients, `team_id`
 
-Changing config and re-running the **fast loop** (stages 1–5) does not require re-encoding 100K candidates.
-
-### What to re-run when something changes
-
-| If you change… | Re-run from… |
-|----------------|--------------|
-| `candidates.jsonl` or INSTRUCTOR encoding | `stage0/run.py` → `run_cluster.py` → stages 1–5 |
-| UMAP/HDBSCAN parameters only | `stage0/run_cluster.py` (with overwrite) → stages 1–5 |
-| `stage2:` config (gates, honeypot rules) | stages 2–5 |
-| `stage3:` queries, weights, cutoff | stages 3–5 |
-| Cross-encoder model or `keep_n` | stages 4–5 |
-| `stage5:` formula / weights only | stage 5 |
+Changing config and re-running the **fast loop** (stages 1–5) does not require re-encoding 100K candidates. See [§1 What to re-run when something changes](#what-to-re-run-when-something-changes) for the full matrix.
 
 ### Integration hook
 

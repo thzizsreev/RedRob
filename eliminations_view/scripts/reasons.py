@@ -12,6 +12,7 @@ REASON_LABELS: dict[str, str] = {
     "honeypot_graduation_vs_exp": "Experience exceeds time since graduation",
     "honeypot_expert_zero": "Expert skills with zero duration",
     "honeypot_skill_years_impossible": "Skill years exceed total experience",
+    "honeypot_skill_years_ceiling": "Skill years exceed plausible ceiling",
     "honeypot_inverted_dates": "Role end before start",
     "honeypot_future_end_date": "Role end date in the future",
     "exp_out_of_band": "Experience outside required band",
@@ -34,6 +35,7 @@ RULE_LABELS: dict[str, str] = {
     "graduation_vs_exp": "Grad vs exp",
     "expert_zero": "Expert zero dur.",
     "skill_years_impossible": "Skill years",
+    "skill_years_ceiling": "Skill ceiling",
     "inverted_dates": "Inverted dates",
     "future_end_date": "Future end",
 }
@@ -47,6 +49,7 @@ BADGE_LABELS: dict[str, str] = {
     "honeypot_graduation_vs_exp": "Grad vs exp",
     "honeypot_expert_zero": "Expert zero dur.",
     "honeypot_skill_years_impossible": "Skill years",
+    "honeypot_skill_years_ceiling": "Skill ceiling",
     "honeypot_inverted_dates": "Inverted dates",
     "honeypot_future_end_date": "Future end",
     "exp_out_of_band": "Exp band",
@@ -123,6 +126,16 @@ def build_summary(
         max_y = d.get("max_skill_years", "")
         yoe = d.get("total_years_exp", "")
         return f"Max skill {max_y}y ({skill}) > claimed YOE {yoe}y"
+
+    if reason_code == "honeypot_skill_years_ceiling":
+        d = details.get("skill_years_ceiling") or details
+        skill = d.get("skill", "")
+        skill_y = d.get("skill_years", "")
+        if d.get("violation") == "absolute":
+            return f"Skill {skill_y}y ({skill}) exceeds absolute max 30y"
+        ceiling = d.get("ceiling_years", "")
+        yoe = d.get("total_years_exp", "")
+        return f"Skill {skill_y}y ({skill}) exceeds ceiling {ceiling}y at {yoe} YOE"
 
     if reason_code == "honeypot_timeline_sum":
         d = details.get("timeline_sum") or details

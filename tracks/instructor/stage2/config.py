@@ -14,6 +14,10 @@ class HoneypotConfig:
     duration_overshoot_grace_days: int
     experience_overage_tolerance_years: float
     grad_to_work_buffer_years: int
+    max_skill_years_absolute: float
+    max_skill_overshoot_factor: float
+    min_yoe_for_factor_check: float
+    early_career_skill_buffer_years: float
 
 
 @dataclass(frozen=True)
@@ -431,6 +435,12 @@ def load_stage2_config(config_path: Path) -> Stage2Config:
                 hp.get("experience_overage_tolerance_years", 2)
             ),
             grad_to_work_buffer_years=int(hp.get("grad_to_work_buffer_years", 1)),
+            max_skill_years_absolute=float(hp.get("max_skill_years_absolute", 30)),
+            max_skill_overshoot_factor=float(hp.get("max_skill_overshoot_factor", 1.4)),
+            min_yoe_for_factor_check=float(hp.get("min_yoe_for_factor_check", 3)),
+            early_career_skill_buffer_years=float(
+                hp.get("early_career_skill_buffer_years", 3)
+            ),
         ),
         title_families={
             k: [str(x).lower() for x in v]

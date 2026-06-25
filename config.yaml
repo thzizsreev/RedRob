@@ -18,6 +18,10 @@ stage2:
     duration_overshoot_grace_days: 30
     experience_overage_tolerance_years: 2
     grad_to_work_buffer_years: 1
+    max_skill_years_absolute: 30
+    max_skill_overshoot_factor: 1.4
+    min_yoe_for_factor_check: 3
+    early_career_skill_buffer_years: 3
   title_families:
     core_eng:
       - engineer

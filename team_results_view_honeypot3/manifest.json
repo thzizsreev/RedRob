@@ -1,0 +1,13 @@
+{
+  "built_at_utc": "2026-06-25T19:07:34.663715+00:00",
+  "candidate_count": 100,
+  "sources": {
+    "submission_csv": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\artifacts\\runtime\\stage5\\team_xxx.csv",
+    "candidates_jsonl": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\data\\candidates.jsonl",
+    "stage5_parquet": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\artifacts\\runtime\\stage5\\stage5_scored_top100.parquet"
+  },
+  "outputs": {
+    "team_results_json": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\team_results_view_honeypot3\\team_results.json",
+    "team_results_html": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\team_results_view_honeypot3\\team_results.html"
+  }
+}

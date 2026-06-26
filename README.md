@@ -20,7 +20,7 @@ Dependency order (run top → bottom):
 
   [once per machine]     onnx/export_to_onnx.py
                               ↓
-  [once per pool]        stage0/run.py          ← precompute.py (vectors + FAISS + BM25)
+  [once per pool]        stage0/run.py          ← vectors + FAISS + skill scores + Stage 3 query vectors
                               ↓
   [once per pool]        stage0/run_cluster.py  ← UMAP + HDBSCAN
                               ↓
@@ -33,7 +33,7 @@ Dependency order (run top → bottom):
 
 | Step | Command | Required? | When to skip |
 |------|---------|-----------|--------------|
-| 1. INSTRUCTOR ONNX | `cd onnx && python export_to_onnx.py` | Yes (Stages 0 & 3) | `onnx/models/instructor-large-encoder.onnx` already exists |
+| 1. INSTRUCTOR ONNX | `cd onnx && python export_to_onnx.py` | Yes (Stage 0 precompute) | `onnx/models/instructor-large-encoder.onnx` already exists |
 | 2. Vector precompute | `python tracks/instructor/stage0/run.py` | Yes (Stages 1–3) | All files in `artifacts/runtime/stage0/` present |
 | 3. Cluster precompute | `python tracks/instructor/stage0/run_cluster.py` | Yes (Stage 1) | `cluster_labels.npy` etc. in `artifacts/runtime/stage1/` |
 | 4. Cross-encoder ONNX | `python tracks/instructor/stage0/run_cross_encoder.py` | Yes (Stage 4) | `models/cross_encoder/model.onnx` exists |
@@ -52,18 +52,18 @@ Dependency order (run top → bottom):
 
 **What it does:** Downloads `hkunlp/instructor-large`, exports the T5 **encoder** to ONNX. Instruction masking, mean pooling, dense projection, and L2 normalization still run in Python at inference time ([`tracks/instructor/core/onnx_embedder.py`](tracks/instructor/core/onnx_embedder.py)).
 
-**Why it's needed:** Step 2 (`run.py`) and Stage 3 retrieval call `load_embedder()`, which fails fast if ONNX weights are missing.
+**Why it's needed:** Step 2 (`run.py`) calls `load_embedder()` for vector encoding, skill scoring, and Stage 3 query-vector precompute. Stage 3 at runtime loads precomputed `.npy` query vectors only (no ONNX).
 
 **Smoke test:** `python onnx/run_encode.py` (expects CUDA `onnxruntime-gpu`).
 
 ---
 
-#### Step 2 — Vector + FAISS + BM25 precompute (once per candidate pool)
+#### Step 2 — Vector + FAISS + skill scores + Stage 3 query vectors (once per candidate pool)
 
 | | |
 |---|---|
 | **Command** | `python tracks/instructor/stage0/run.py` |
-| **Core logic** | [`tracks/instructor/stage0/precompute.py`](tracks/instructor/stage0/precompute.py) (called by `run.py`) |
+| **Core logic** | [`tracks/instructor/stage0/precompute.py`](tracks/instructor/stage0/precompute.py), [`skill_precompute.py`](tracks/instructor/stage0/skill_precompute.py), [`stage3_query_precompute.py`](tracks/instructor/stage0/stage3_query_precompute.py) |
 | **Prerequisite** | Step 1 (ONNX weights) |
 | **GPU?** | Yes — `onnxruntime-gpu` + CUDA |
 | **Default input** | `data/candidates.jsonl` (~100K pool) |
@@ -76,7 +76,8 @@ Dependency order (run top → bottom):
 3. **3-pass INSTRUCTOR encoding** — same passage under retrieval / infra / eval instructions → three 768-d blocks concatenated to **2304-d** ([`core/encode.py`](tracks/instructor/core/encode.py)).
 4. Builds a **FAISS** `IndexFlatIP` over all vectors + `id_map.json` (row index → `CAND_*` id).
 5. Saves `candidate_vectors.npy` and precomputed **JD query vector** `jd_query_vec.npy`.
-6. Builds **BM25** jargon index (`bm25_index.pkl`) aligned row-for-row with FAISS, using `stage3.q4_tokens` from `config.yaml`.
+6. Computes global **skill_weighted_score** per candidate (IDF + tier relevance + depth) → `candidate_features.parquet`.
+7. ONNX-encodes Stage 3 Q1/Q2/Q3 query texts → `stage3_query_vectors/q{1,2,3}_vec.npy` + `stage3_query_manifest.json` (re-run when `stage3:` q texts or subspace weights change).
 
 **Why it's needed:**
 
@@ -85,7 +86,8 @@ Dependency order (run top → bottom):
 | `candidate_index.faiss` + `id_map.json` | Stage 1 (anchor similarity), Stage 3 (dense Q1/Q2) |
 | `candidate_vectors.npy` | Stage 1 clustering, Stage 3 Q3 penalty |
 | `jd_query_vec.npy` | Stage 1 cluster ranking (JD anchor) |
-| `bm25_index.pkl` | Stage 3 sparse Q4 retrieval |
+| `candidate_features.parquet` | Stage 3 skill track (L3) |
+| `stage3_query_vectors/*.npy` + manifest | Stage 3 dense Q1/Q2/Q3 (no runtime encoding) |
 
 **Edit before run** ([`tracks/instructor/stage0/run.py`](tracks/instructor/stage0/run.py)):
 
@@ -104,7 +106,10 @@ Use a smaller JSON/JSONL file (e.g. `data/sample5k.json`) for dev — there is *
 - `id_map.json` — FAISS row → `candidate_id`
 - `candidate_vectors.npy` — `(N, 2304)` float32
 - `jd_query_vec.npy` — block-weighted JD query vector
-- `bm25_index.pkl` — BM25 corpus, N documents
+- `candidate_features.parquet` — `candidate_id`, `skill_weighted_score` (global, normalized)
+- `stage3_query_vectors/q1_vec.npy`, `q2_vec.npy`, `q3_vec.npy` — pre-encoded Stage 3 queries
+- `stage3_query_manifest.json` — config hash for query-vector invalidation
+- `skill_idf.json` — optional debug artifact from skill precompute
 
 **Typical runtime:** Dominated by 3 encode passes × N candidates (hours at 100K on GPU).
 
@@ -297,7 +302,7 @@ redrob/
 
 | Stage | Purpose | Key modules | Runner(s) |
 |-------|---------|-------------|-----------|
-| **0** | Offline encode, FAISS, BM25, cross-encoder export, cluster precompute | `precompute.py`, `bm25_precompute.py`, `cross_encoder_export.py`, `cluster_precompute.py` | `run.py`, `run_cluster.py`, `run_cross_encoder.py` |
+| **0** | Offline encode, FAISS, skill scores, query vectors, cross-encoder export, cluster precompute | `precompute.py`, `skill_precompute.py`, `stage3_query_precompute.py`, `cross_encoder_export.py`, `cluster_precompute.py` | `run.py`, `run_cluster.py`, `run_cross_encoder.py` |
 | **1** | JD-anchor cluster filter (~100K → ~6K) | `pipeline.py`, `clustering/`, `filtering/`, `artifacts.py` | `run_filter.py` (`run_cluster.py` is shim → stage0) |
 | **2** | Hard gate + tabular features (~6K → ~3–4K) | `gate.py`, `checks/*`, `honeypot_rules.py`, `config.py` | `run.py` |
 | **3** | Hybrid retrieval (~3–4K → 300–600) | `retrieve.py`, `fusion.py`, `dense_retrieve.py`, `sparse_retrieve.py`, `query_encode.py` | `run.py` |
@@ -307,7 +312,7 @@ redrob/
 ### Artifact handoff chain
 
 ```
-artifacts/runtime/stage0/     (FAISS, vectors, BM25, jd_query_vec)
+artifacts/runtime/stage0/     (FAISS, vectors, skill features, query vectors, jd_query_vec)
         ↓
 artifacts/runtime/stage1/     filtered_ids.json, cluster_rankings.json
         ↓
@@ -344,7 +349,7 @@ artifacts/runtime/stage5/     team_xxx.csv, stage5_scored.parquet
 ```mermaid
 flowchart TB
   subgraph offline [Offline once per pool]
-    S0[Stage0 encode FAISS BM25]
+    S0[Stage0 encode FAISS skill query vecs]
     S0C[Stage0 cluster UMAP HDBSCAN]
     CE[Cross-encoder ONNX export]
   end
@@ -366,7 +371,7 @@ flowchart TB
 |-------|------------|
 | Embeddings | INSTRUCTOR-large (`hkunlp/instructor-large`) via ONNX Runtime **CUDA** |
 | Dense index | FAISS `IndexFlatIP`, 2304-d concatenated blocks |
-| Sparse retrieval | BM25Okapi (`rank_bm25`), jargon token corpus |
+| Skill track (L3) | Precomputed `skill_weighted_score` from `candidate_features.parquet` |
 | Dimensionality reduction | UMAP (12-d, cosine) |
 | Clustering | HDBSCAN (`min_cluster_size = max(15, 1.5% × N)`) |
 | Reranking | MS MARCO MiniLM cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) ONNX **CPU** |
@@ -377,7 +382,7 @@ flowchart TB
 
 ### Innovative design choices (by stage)
 
-- **Stage 0 — Block-weighted multi-instruction vectors:** Each candidate is encoded under three task-specific instructions (retrieval, infra, eval). Blocks are L2-normalized separately and concatenated into one 2304-d vector — one FAISS index, three semantic facets. BM25 is pre-built at Stage 0 using `stage3.q4_tokens` jargon, aligned row-for-row with the FAISS `id_map`.
+- **Stage 0 — Block-weighted multi-instruction vectors:** Each candidate is encoded under three task-specific instructions (retrieval, infra, eval). Blocks are L2-normalized separately and concatenated into one 2304-d vector — one FAISS index, three semantic facets. Global `skill_weighted_score` and Stage 3 Q1/Q2/Q3 query vectors are precomputed here; Stage 3 is a pure runner with no ONNX.
 
 - **Stage 1 — Cluster-atomic filtering:** Clusters are ranked by **median** anchor similarity to the JD vector; whole clusters are admitted until a floor (default 100) is met — not per-candidate top-K within the pool. HDBSCAN noise points are a last resort.
 
@@ -449,19 +454,19 @@ From [`tracks/instructor/stage2/gate.py`](tracks/instructor/stage2/gate.py) and 
 
 From [`tracks/instructor/stage3/fusion.py`](tracks/instructor/stage3/fusion.py):
 
-**Four queries:**
+**Three retrieval lists + Q3 penalty:**
 
 | Query | Role | Mechanism |
 |-------|------|-----------|
 | Q1 | Must-have retrieval/infra/eval | Dense FAISS, subspace weights (0.35 / 0.45 / 0.20) |
 | Q2 | Career shape / Tier-5 rescue | Dense FAISS, balanced subspace weights |
+| L3 | Structured skills | Precomputed `skill_weighted_score`, top-k among Stage 2 survivors |
 | Q3 | Anti-patterns | Encoded vector used as **penalty**, not a retrieval list |
-| Q4 | Jargon / BM25 | Sparse BM25 over `q4_tokens` (FAISS, NDCG, RAG, LoRA, …) |
 
-**Reciprocal Rank Fusion** (union of Q1, Q2, Q4 candidate sets; miss penalty rank = k+1):
+**Reciprocal Rank Fusion** (union of Q1, Q2, L3 candidate sets; miss penalty rank = k+1):
 
 \[
-\mathrm{RRF}(c) = \frac{1}{k + r_1(c)} + \frac{1}{k + r_2(c)} + \frac{1}{k + r_{\mathrm{bm25}}(c)}, \quad k = 60
+\mathrm{RRF}(c) = \frac{1}{k + r_1(c)} + \frac{1}{k + r_2(c)} + \frac{1}{k + r_{\mathrm{skill}}(c)}, \quad k = 60
 \]
 
 **Q3 penalty:**
@@ -530,14 +535,14 @@ run_pipeline.py
     └── pipeline.run_ranking_pipeline()
             ├── stage1.run_stage1_filter()     ← core.io, stage0/stage1 artifacts
             ├── stage2.run()                   ← stage1 JSON + candidates.jsonl + config stage2
-            ├── stage3.run()                   ← stage2 parquet + stage0 FAISS/BM25 + core.onnx_embedder
+            ├── stage3.run()                   ← stage2 parquet + stage0 FAISS/skill/query vectors (no ONNX)
             ├── stage4.run()                   ← stage3 parquet + models/cross_encoder/
             └── stage5.run()                   ← stage4 parquet + candidates.jsonl + config stage5
 ```
 
 **Stage 0** (not in `run_pipeline.py`) wires:
 
-- `core.onnx_embedder` + `core.encode` + `core.index` → FAISS/BM25 artifacts
+- `core.onnx_embedder` + `core.encode` + `core.index` → FAISS + skill features + query vectors
 - `stage1.pipeline.precompute_stage1_clustering` (via `stage0/cluster_precompute.py`) → cluster `.npy`
 - `stage0/cross_encoder_export.py` → `models/cross_encoder/` for Stage 4
 
@@ -575,7 +580,7 @@ RedRob implements a **staged, precision-first ranking funnel** for a senior AI r
 
 1. **Semantic coarse filter** (block-weighted INSTRUCTOR + cluster-atomic Stage 1)
 2. **Deterministic hard gate** (honeypots, JD disqualifiers, career-shape flags in Stage 2)
-3. **Hybrid retrieval** (dense multi-query + BM25 + anti-pattern penalty in Stage 3)
+3. **Hybrid retrieval** (dense multi-query + skill track + anti-pattern penalty in Stage 3)
 4. **Cross-encoder precision** (MS MARCO MiniLM on a shortlist in Stage 4)
 5. **Explainable composite scoring** (seven transparent layers → top 100 + reasoning in Stage 5)
 

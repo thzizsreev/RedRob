@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import pickle
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,11 +10,11 @@ from pathlib import Path
 import faiss
 import numpy as np
 import polars as pl
-from rank_bm25 import BM25Okapi
 
 from tracks.instructor.core.config import (
-    BM25_INDEX_FILENAME,
+    CANDIDATE_FEATURES_FILENAME,
     CANDIDATE_VECTORS_FILENAME,
+    STAGE3_QUERY_MANIFEST_FILENAME,
     VECTOR_DIM,
 )
 from tracks.instructor.core.io import load_index_and_id_map, load_vectors_from_artifacts
@@ -42,7 +41,6 @@ REQUIRED_STAGE2_COLUMNS = frozenset(
 class RetrievalAssets:
     index: faiss.Index
     vectors: np.ndarray
-    bm25: BM25Okapi
     id_to_row: dict[str, int]
     row_to_id: list[str]
 
@@ -95,29 +93,38 @@ def load_retrieval_assets(artifacts_path: Path) -> RetrievalAssets:
             f"({index.ntotal}, {VECTOR_DIM})"
         )
 
-    bm25_path = artifacts_path / BM25_INDEX_FILENAME
-    if not bm25_path.exists():
-        raise FileNotFoundError(
-            f"BM25 index not found: {bm25_path}. "
-            "Re-run tracks/instructor/stage0/run.py to build bm25_index.pkl"
-        )
-    with open(bm25_path, "rb") as f:
-        bm25 = pickle.load(f)
-
-    corpus_size = getattr(bm25, "corpus_size", len(bm25.doc_freqs))
-    if corpus_size != index.ntotal:
-        raise ValueError(
-            f"BM25 corpus size ({corpus_size}) != FAISS index size ({index.ntotal})"
-        )
-
     print(f"FAISS index: {index.ntotal:,} vectors, dim={index.d}")
     return RetrievalAssets(
         index=index,
         vectors=vectors,
-        bm25=bm25,
         id_to_row=id_to_row,
         row_to_id=row_to_id,
     )
+
+
+def load_skill_features(artifacts_path: Path) -> pl.DataFrame:
+    path = artifacts_path / CANDIDATE_FEATURES_FILENAME
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Missing candidate features: {path}. "
+            "Re-run tracks/instructor/stage0/run.py to build skill_weighted_score"
+        )
+
+    df = pl.read_parquet(path, columns=["candidate_id", "skill_weighted_score"])
+    if "skill_weighted_score" not in df.columns:
+        raise ValueError(
+            "skill_weighted_score column not found in candidate_features.parquet — "
+            "ensure Stage 0 skill precompute has been run."
+        )
+    print(f"Loaded skill features: {df.height:,} candidates")
+    return df
+
+
+def load_query_vectors(query_vectors_dir: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    q1 = np.load(query_vectors_dir / "q1_vec.npy").astype(np.float32)
+    q2 = np.load(query_vectors_dir / "q2_vec.npy").astype(np.float32)
+    q3 = np.load(query_vectors_dir / "q3_vec.npy").astype(np.float32)
+    return q1, q2, q3
 
 
 def build_survivor_row_indices(
@@ -140,6 +147,10 @@ def build_survivor_row_indices(
         )
 
     return np.array(indices, dtype=np.int64)
+
+
+def stage3_query_manifest_path(artifacts_path: Path) -> Path:
+    return artifacts_path / STAGE3_QUERY_MANIFEST_FILENAME
 
 
 def _write_retrieved_json(path: Path, df: pl.DataFrame) -> None:

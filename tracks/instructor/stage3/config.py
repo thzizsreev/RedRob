@@ -23,12 +23,13 @@ class Stage3Config:
     q1_text: str
     q2_text: str
     q3_text: str
-    q4_tokens: list[str]
     subspace_weights_q1: SubspaceWeights
     subspace_weights_q2: SubspaceWeights
     subspace_weights_q3: SubspaceWeights
     per_query_k_dense: int
-    per_query_k_sparse: int
+    per_query_k_skill: int
+    miss_penalty_dense: int
+    miss_penalty_skill: int
     rrf_k: int
     alpha_neg: float
     beta_cluster: float
@@ -56,16 +57,19 @@ def load_stage3_config(config_path: Path) -> Stage3Config:
         raise ValueError(f"Missing 'stage3' namespace in {config_path}")
 
     s3 = raw["stage3"]
+    per_query_k_dense = int(s3["per_query_k_dense"])
+    per_query_k_skill = int(s3["per_query_k_skill"])
     return Stage3Config(
         q1_text=str(s3["q1_text"]).strip(),
         q2_text=str(s3["q2_text"]).strip(),
         q3_text=str(s3["q3_text"]).strip(),
-        q4_tokens=[str(t) for t in s3["q4_tokens"]],
         subspace_weights_q1=_parse_weights(s3["subspace_weights_q1"]),
         subspace_weights_q2=_parse_weights(s3["subspace_weights_q2"]),
         subspace_weights_q3=_parse_weights(s3["subspace_weights_q3"]),
-        per_query_k_dense=int(s3["per_query_k_dense"]),
-        per_query_k_sparse=int(s3["per_query_k_sparse"]),
+        per_query_k_dense=per_query_k_dense,
+        per_query_k_skill=per_query_k_skill,
+        miss_penalty_dense=int(s3.get("miss_penalty_dense", per_query_k_dense + 1)),
+        miss_penalty_skill=int(s3.get("miss_penalty_skill", per_query_k_skill + 1)),
         rrf_k=int(s3["rrf_k"]),
         alpha_neg=float(s3["alpha_neg"]),
         beta_cluster=float(s3["beta_cluster"]),

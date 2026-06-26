@@ -2,7 +2,7 @@
 """
 Stages 1–5 ranking pipeline — run the full instructor ranking procedure.
 
-Requires Stage 0 precompute artifacts on disk (vectors, FAISS, BM25, clusters).
+Requires Stage 0 precompute artifacts on disk (vectors, FAISS, skill scores, query vectors, clusters).
 Does not run Stage 0 or cross-encoder export.
 
 Individual stages can still be run standalone:

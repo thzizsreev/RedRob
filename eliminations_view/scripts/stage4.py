@@ -17,8 +17,8 @@ STAGE4_PIPELINE_KEYS = (
     "q1_rank",
     "q2_score",
     "q2_rank",
-    "bm25_score",
-    "bm25_rank",
+    "skill_score",
+    "skill_rank",
     "rrf_score",
     "q3_neg_sim",
 )

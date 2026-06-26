@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Stage 3 — Multi-Query Hybrid Retrieval.
+Stage 3 — Multi-Query Hybrid Retrieval (pure runner, no ONNX).
 
 Requires Stage 2 output and Stage 0 precomputed artifacts. Edit paths below before running.
 
     python tracks/instructor/stage3/run.py
 
 Inputs:
-  STAGE0_PATH            artifacts/runtime/stage0/ (FAISS index, vectors, BM25)
+  STAGE0_PATH            artifacts/runtime/stage0/ (FAISS, vectors, skill features, query vecs)
   STAGE2_INPUT           artifacts/runtime/stage2/stage2_gated.parquet
   CONFIG_PATH            config.yaml (stage3: block)
 

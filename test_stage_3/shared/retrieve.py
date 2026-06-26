@@ -1,4 +1,4 @@
-"""Stage 3 multi-query hybrid retrieval orchestrator (pure runner — no ONNX)."""
+"""Stage 3 runner orchestrator — loads precomputed artifacts only (no ONNX)."""
 
 from __future__ import annotations
 
@@ -6,32 +6,30 @@ from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
 
+import numpy as np
 import polars as pl
 
-from tracks.instructor.stage0.manifest import verify_query_manifest
-from tracks.instructor.stage3.config import Stage3Config, load_stage3_config
-from tracks.instructor.stage3.dense_retrieve import (
+from test_stage_3.shared.config_runner import RunnerConfig, load_runner_config
+from test_stage_3.shared.dense_retrieve import (
     build_id_selector,
     dense_retrieve_q1,
     dense_retrieve_q2,
 )
-from tracks.instructor.stage3.fusion import (
+from test_stage_3.shared.fusion import (
     adaptive_cut,
     build_union,
     compute_fused_score,
     compute_q3_penalty,
     compute_rrf,
 )
-from tracks.instructor.stage3.io import (
-    build_survivor_row_indices,
-    load_query_vectors,
-    load_retrieval_assets,
+from test_stage_3.shared.io_precompute import load_manifest, load_query_vectors
+from test_stage_3.shared.io_runner import (
     load_skill_features,
     load_stage2_gated,
-    stage3_query_manifest_path,
     write_stage3_outputs,
 )
-from tracks.instructor.stage3.skill_retrieve import skill_retrieve_l3
+from test_stage_3.shared.io_stage0 import load_retrieval_assets, resolve_stage0_dir
+from test_stage_3.shared.skill_retrieve import skill_retrieve_l3
 
 
 @dataclass(frozen=True)
@@ -63,27 +61,20 @@ def _triple_overlap(l1: pl.DataFrame, l2: pl.DataFrame, l3: pl.DataFrame) -> int
     return len(s1 & s2 & s3)
 
 
-def run(
-    stage2_path: Path,
-    artifacts_path: Path,
-    output_dir: Path,
-    config_path: Path,
-) -> Stage3Result:
+def run(config_path: Path | None = None) -> Stage3Result:
     start = perf_counter()
-    config = load_stage3_config(config_path)
+    config = load_runner_config(config_path)
+    manifest = load_manifest(config.precomputed_manifest)
 
-    stage2_df = load_stage2_gated(stage2_path, config)
-    assets = load_retrieval_assets(artifacts_path)
-    skill_features = load_skill_features(artifacts_path)
-    survivor_indices = build_survivor_row_indices(stage2_df, assets.id_to_row)
+    stage2_df = load_stage2_gated(manifest.cohort_stage2, config)
+    skill_features = load_skill_features(manifest.cohort_features)
+    survivor_indices = np.load(manifest.survivor_row_indices).astype(np.int64)
+
+    stage0_dir = resolve_stage0_dir(manifest.stage0_pointer)
+    assets = load_retrieval_assets(stage0_dir)
     selector = build_id_selector(survivor_indices)
 
-    query_vectors_dir = verify_query_manifest(
-        stage3_query_manifest_path(artifacts_path),
-        config_path,
-        artifacts_path,
-    )
-    q1_vec, q2_vec, q3_vec = load_query_vectors(query_vectors_dir)
+    q1_vec, q2_vec, q3_vec = load_query_vectors(manifest.query_vectors_dir)
     print("Loaded precomputed query vectors (no ONNX)")
 
     l1 = dense_retrieve_q1(
@@ -110,7 +101,6 @@ def run(
     )
 
     top_k, threshold = adaptive_cut(union, config)
-
     retrieved = top_k.join(stage2_df, on="candidate_id", how="left").sort("stage3_rank")
 
     rank_df = top_k.select("candidate_id", "stage3_rank")
@@ -136,7 +126,7 @@ def run(
         "elapsed_seconds": round(elapsed, 3),
     }
 
-    write_stage3_outputs(output_dir, retrieved, distribution, summary)
+    write_stage3_outputs(config.output_dir, retrieved, distribution, summary)
 
     return Stage3Result(
         input_count=stage2_df.height,
@@ -152,14 +142,14 @@ def run(
         fused_mean=summary["fused_score_mean"],
         fused_std=summary["fused_score_std"],
         elapsed_seconds=elapsed,
-        output_dir=output_dir,
+        output_dir=config.output_dir,
         top_k_df=retrieved,
         distribution_df=distribution,
     )
 
 
 def print_stage3_summary(result: Stage3Result) -> None:
-    print("\n--- Stage 3 summary ---")
+    print("\n--- Stage 3 summary (runner) ---")
     print(f"Input (Stage 2):  {result.input_count:,}")
     print(f"Union size:       {result.union_size:,}")
     print(f"L1 / L2 / L3:     {result.l1_size:,} / {result.l2_size:,} / {result.l3_size:,}")
@@ -188,15 +178,13 @@ def print_stage3_summary(result: Stage3Result) -> None:
     present = [c for c in display_cols if c in df.columns]
 
     print("\n--- Top 10 by fused_score ---")
-    top10 = df.sort("stage3_rank").head(10).select(present)
-    for row in top10.iter_rows(named=True):
-        parts = [f"{k}={row[k]}" for k in present]
-        print("  " + "  ".join(parts))
+    for row in df.sort("stage3_rank").head(10).select(present).iter_rows(named=True):
+        print("  " + "  ".join(f"{k}={row[k]}" for k in present))
 
     print("\n--- Bottom 5 in output ---")
-    bottom5 = df.sort("stage3_rank", descending=True).head(5).select(present)
-    for row in bottom5.iter_rows(named=True):
-        parts = [f"{k}={row[k]}" for k in present]
-        print("  " + "  ".join(parts))
+    for row in df.sort("stage3_rank", descending=True).head(5).select(present).iter_rows(
+        named=True
+    ):
+        print("  " + "  ".join(f"{k}={row[k]}" for k in present))
 
     print(f"\nWrote outputs to {result.output_dir}")

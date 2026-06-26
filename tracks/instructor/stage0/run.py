@@ -6,7 +6,7 @@ Prerequisite: onnx/export_to_onnx.py (INSTRUCTOR ONNX weights).
 
 Other offline Stage 0 runners (run manually in dependency order):
   run_cross_encoder.py  — cross-encoder ONNX for Stage 4 (independent)
-  run.py                — this file: vectors + FAISS + BM25
+  run.py                — this file: vectors + FAISS + skill scores + Stage 3 query vectors
   run_cluster.py        — UMAP + HDBSCAN cluster artifacts → stage1/
 
 GPU via ONNX Runtime (CUDA) only. Edit CANDIDATES_PATH and OUTPUT_DIR below before running.
@@ -18,7 +18,9 @@ Outputs (under OUTPUT_DIR = artifacts/runtime/stage0/):
   id_map.json
   jd_query_vec.npy
   candidate_vectors.npy
-  bm25_index.pkl
+  candidate_features.parquet  (skill_weighted_score per candidate)
+  stage3_query_vectors/q{1,2,3}_vec.npy
+  stage3_query_manifest.json
 """
 
 from __future__ import annotations
@@ -33,6 +35,8 @@ if str(_ROOT) not in sys.path:
 
 from tracks.instructor.core.onnx_embedder import load_embedder, unload_embedder
 from tracks.instructor.stage0.precompute import run_precompute
+from tracks.instructor.stage0.skill_precompute import run_skill_precompute
+from tracks.instructor.stage0.stage3_query_precompute import run_stage3_query_precompute
 from tracks.shared.paths import (
     ARTIFACTS_DIR,
     CANDIDATES_JSONL_PATH,
@@ -62,7 +66,9 @@ def main() -> None:
     model = load_embedder()
     started = perf_counter()
     try:
-        run_precompute(CANDIDATES_PATH, model, OUTPUT_DIR, config_path=CONFIG_PATH)
+        records = run_precompute(CANDIDATES_PATH, model, OUTPUT_DIR)
+        run_skill_precompute(records, OUTPUT_DIR, CONFIG_PATH)
+        run_stage3_query_precompute(model, OUTPUT_DIR, CONFIG_PATH)
     finally:
         unload_embedder(model)
     elapsed = perf_counter() - started
@@ -74,7 +80,9 @@ def main_full() -> None:
     model = load_embedder()
     started = perf_counter()
     try:
-        run_precompute(CANDIDATES_JSONL_PATH, model, ARTIFACTS_DIR, config_path=CONFIG_PATH)
+        records = run_precompute(CANDIDATES_JSONL_PATH, model, ARTIFACTS_DIR)
+        run_skill_precompute(records, ARTIFACTS_DIR, CONFIG_PATH)
+        run_stage3_query_precompute(model, ARTIFACTS_DIR, CONFIG_PATH)
     finally:
         unload_embedder(model)
     elapsed = perf_counter() - started

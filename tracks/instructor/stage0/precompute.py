@@ -5,10 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import yaml
-
 from tracks.instructor.core.index import build_vector_index, build_vector_index_from_records
-from tracks.instructor.stage0.bm25_precompute import build_bm25_index
 
 
 def load_candidates_json(path: Path) -> list[dict]:
@@ -19,25 +16,12 @@ def load_candidates_json(path: Path) -> list[dict]:
     return records
 
 
-def _load_q4_tokens(config_path: Path | None) -> list[str] | None:
-    if config_path is None or not config_path.exists():
-        return None
-    with open(config_path, encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
-    stage3 = raw.get("stage3", {})
-    tokens = stage3.get("q4_tokens")
-    if not tokens:
-        return None
-    return [str(t) for t in tokens]
-
-
 def run_precompute(
     candidates_path: Path,
     model,
     output_dir: Path,
-    *,
-    config_path: Path | None = None,
-) -> None:
+) -> list[dict]:
+    """Build FAISS index and candidate vectors. Returns records in row order."""
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Writing artifacts to {output_dir}")
 
@@ -49,8 +33,5 @@ def run_precompute(
         print(f"Processing candidates from {candidates_path}...")
         _, _, _, records = build_vector_index(candidates_path, model, output_dir)
 
-    q4_tokens = _load_q4_tokens(config_path)
-    print("Building BM25 jargon index...")
-    build_bm25_index(records, output_dir, q4_tokens=q4_tokens)
-
-    print("Precompute complete.")
+    print("Vector precompute complete.")
+    return records

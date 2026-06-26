@@ -15,7 +15,6 @@ protobuf>=3.20,<5
 pyyaml>=6.0.0
 polars>=0.20.0
 lightgbm>=4.1.0
-rank_bm25>=0.2.2
 pyarrow>=15.0.0
 
 # --- Stage 1 clustering (UMAP + HDBSCAN) ---

@@ -7,16 +7,15 @@ import warnings
 import numpy as np
 import polars as pl
 
-from tracks.instructor.stage3.config import Stage3Config
+from test_stage_3.shared.config_runner import RunnerConfig
 
 
 def build_union(
     l1: pl.DataFrame,
     l2: pl.DataFrame,
     l3: pl.DataFrame,
-    config: Stage3Config,
+    config: RunnerConfig,
 ) -> pl.DataFrame:
-    """Union candidate IDs from L1, L2, L3 with miss-penalty ranks."""
     ids: set[str] = set()
     for frame in (l1, l2, l3):
         if frame.height > 0:
@@ -91,9 +90,8 @@ def compute_fused_score(
 
 def adaptive_cut(
     union_df: pl.DataFrame,
-    config: Stage3Config,
+    config: RunnerConfig,
 ) -> tuple[pl.DataFrame, float]:
-    """Apply adaptive threshold and return top-k candidates with stage3_rank."""
     if union_df.height == 0:
         raise ValueError("Union is empty — cannot produce Stage 3 output")
 

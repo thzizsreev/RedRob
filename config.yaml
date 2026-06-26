@@ -246,6 +246,64 @@ stage2:
     india_signals:
       - india
 
+stage0_skill:
+  top_k_skills: 15
+  tier_rewards:
+    T1: 1.0
+    T2: 0.65
+    T3: 0.35
+    T4: 0.25
+    T5: 0.05
+  tier_keywords:
+    T1:
+      - embeddings
+      - semantic search
+      - retrieval
+      - rag
+      - retrieval-augmented
+      - dense retrieval
+      - sentence-transformers
+      - bge
+      - e5
+      - hybrid search
+    T2:
+      - faiss
+      - pinecone
+      - qdrant
+      - weaviate
+      - milvus
+      - opensearch
+      - elasticsearch
+      - vector database
+      - hnsw
+    T3:
+      - ndcg
+      - mrr
+      - map
+      - a/b test
+      - evaluation
+      - ranking metrics
+      - offline-to-online
+      - cross-encoder
+      - bi-encoder
+      - learning-to-rank
+      - lambdarank
+      - reranking
+    T4:
+      - python
+      - embedding drift
+      - embedding model
+      - sparse retrieval
+      - bm25
+      - inference optimization
+    T5:
+      - fine-tuning
+      - lora
+      - qlora
+      - peft
+      - xgboost
+      - lightgbm
+
 stage3:
   q1_text: |
     Production experience building and operating embeddings-based retrieval systems deployed
@@ -275,44 +333,6 @@ stage3:
     or robotics with no meaningful experience in information retrieval, NLP, or ranking systems.
     Has spent five or more years working entirely on closed-source proprietary internal systems
     with no external validation through papers, talks, blog posts, or open-source contributions.
-  q4_tokens:
-    - FAISS
-    - HNSW
-    - Qdrant
-    - Weaviate
-    - Milvus
-    - Pinecone
-    - OpenSearch
-    - Elasticsearch
-    - NDCG
-    - MRR
-    - MAP
-    - cross-encoder
-    - bi-encoder
-    - embedding drift
-    - hybrid search
-    - learning-to-rank
-    - sentence-transformers
-    - BGE
-    - E5
-    - RAG
-    - A/B test
-    - retrieval-augmented
-    - reranking
-    - vector database
-    - dense retrieval
-    - sparse retrieval
-    - BM25
-    - semantic search
-    - embedding model
-    - fine-tuning
-    - LoRA
-    - QLoRA
-    - PEFT
-    - lambdarank
-    - XGBoost
-    - LightGBM
-    - inference optimization
   subspace_weights_q1:
     retrieval: 0.35
     infra: 0.45
@@ -326,7 +346,8 @@ stage3:
     infra: 0.34
     eval: 0.33
   per_query_k_dense: 1000
-  per_query_k_sparse: 500
+  per_query_k_skill: 500
+  miss_penalty_skill: 501
   rrf_k: 60
   alpha_neg: 0.5
   beta_cluster: 0.0

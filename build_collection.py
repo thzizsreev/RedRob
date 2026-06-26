@@ -103,7 +103,7 @@ def flatten_summary_row(merged: dict) -> dict:
         "fused_score": ranking.get("fused_score"),
         "q1_score": ranking.get("q1_score"),
         "q2_score": ranking.get("q2_score"),
-        "bm25_score": ranking.get("bm25_score"),
+        "skill_score": ranking.get("skill_score"),
         "rrf_score": ranking.get("rrf_score"),
         "total_years_exp": ranking.get("total_years_exp"),
         "exp_band": ranking.get("exp_band"),

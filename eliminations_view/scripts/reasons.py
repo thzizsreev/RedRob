@@ -157,7 +157,7 @@ def build_summary(
         return f"{d.get('count', 0)} expert skill(s) with zero duration"
 
     if reason_code == "not_in_retrieval_union":
-        return "Did not appear in any retrieval list (dense Q1/Q2 or BM25 Q4)"
+        return "Did not appear in any retrieval list (dense Q1/Q2 or skill L3)"
 
     if reason_code == "below_fused_cut":
         fused = pipeline.get("fused_score")

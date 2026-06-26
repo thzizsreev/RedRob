@@ -17,10 +17,11 @@ data/candidates.jsonl.gz
 data/sample*.json
 !data/sample_candidates.json
 
-# Track B instructor pipeline outputs (rebuild via tracks/instructor/stage{0..5}/run.py)
-#   artifacts/precomputed/: candidate_vectors.npy, bm25_index.pkl, candidate_features.parquet, ...
-#   artifacts/runtime/stage0/: FAISS index, id_map, cluster artifacts
-#   artifacts/runtime/stage1/: filtered_ids.json, filtered_metadata.json
+# Track A instructor pipeline outputs (rebuild via tracks/instructor/stage{0..5}/run.py)
+#   artifacts/precomputed/: legacy global parquet paths (Stage 4/5 summaries)
+#   artifacts/runtime/stage0/: FAISS index, id_map, candidate_vectors.npy, jd_query_vec.npy,
+#       candidate_features.parquet (skill_weighted_score), stage3_query_vectors/, manifest
+#   artifacts/runtime/stage1/: filtered_ids.json, cluster artifacts
 #   artifacts/runtime/stage2/: stage2_gated.parquet, stage2_summary.json, removed logs
 #   artifacts/runtime/stage3/: stage3_retrieved.parquet
 #   artifacts/runtime/stage4/: stage4_reranked.parquet, stage4_rank_delta.csv
@@ -50,9 +51,12 @@ models/instructor_large_onnx/
 models/ort_test/
 
 # Stage 5 team view outputs (regenerate: python build_team_view.py)
-team_results_view/**
+team_results_view*/
 !team_results_view/
 !team_results_view/.gitkeep
+team_results_view*/**
+!team_results_view/**/
+!team_results_view/**/.gitkeep
 
 # Eliminations view outputs (regenerate: python build_eliminations_view.py)
 eliminations_view/output/**
@@ -75,6 +79,14 @@ stage4_reranked_collection/
 torch_install.log
 *.log
 
+# Stage 3 skill-track test harness (regenerate: test_stage_3/precompute/run.py → runner/run.py)
+test_stage_3/precompute/artifacts/**
+!test_stage_3/precompute/artifacts/
+!test_stage_3/precompute/artifacts/.gitkeep
+test_stage_3/runner/outputs/**
+!test_stage_3/runner/outputs/
+!test_stage_3/runner/outputs/.gitkeep
+
 # Test harness outputs (tests/run_clustering_test.py, tests/run_filtering_test.py, rank.py)
 #   test_output/clustering/, test_output/filtering/, test_output/retrieval/
 test_output/**
@@ -83,6 +95,7 @@ test_output/**
 
 # K-means precompute + run outputs (kmeans/precompute.py, kmeans/run.py)
 kmeans/precomputed/**
+kmeans/outputs/**
 
 # K-means filter outputs (experimental Stage 1 alternative)
 data/filter_kmeans/

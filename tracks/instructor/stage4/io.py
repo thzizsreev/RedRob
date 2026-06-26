@@ -19,7 +19,7 @@ REQUIRED_STAGE3_COLUMNS = frozenset(
         "fused_score",
         "q1_score",
         "q2_score",
-        "bm25_score",
+        "skill_score",
         "q3_neg_sim",
         "rrf_score",
         "exp_band",

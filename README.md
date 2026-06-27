@@ -7,6 +7,16 @@ Hackathon submission system for ranking ~100,000 AI-engineering candidates again
 | **INSTRUCTOR (Track A)** | `hkunlp/instructor-large` via ONNX CUDA | 2304 (3×768 blocks) | Full Stage 0–5 pipeline → `team_xxx.csv` |
 | **Naive baseline** | `BAAI/bge-small-en-v1.5` | 384 | Simple precompute + rank for comparison |
 
+### REST API
+
+The pipeline is also available as a **FastAPI** backend under [`backend/`](backend/). See [`backend/README.md`](backend/README.md) for setup, curl examples, and route reference.
+
+```bash
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+OpenAPI docs: http://localhost:8000/docs
+
 ---
 
 ## 1) How to Run

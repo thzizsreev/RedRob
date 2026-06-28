@@ -1,0 +1,9 @@
+# For LangVAE decode (--decode langvae), use pinned deps on Python 3.11:
+#   pip install -r requirements-pinned.txt
+#
+# For template_hybrid only (no LangVAE), minimal deps suffice:
+torch>=2.0.1
+transformers>=4.35.0
+numpy>=1.24.0
+langvae>=0.3.0
+pythae>=0.1.1

@@ -34,7 +34,7 @@ from tracks.shared.paths import (
 
 DEFAULT_CSV = RUNTIME_STAGE5_DIR / "team_xxx.csv"
 DEFAULT_STAGE5_PARQUET = RUNTIME_STAGE5_DIR / "stage5_scored_top100.parquet"
-DEFAULT_OUT_DIR = ROOT_DIR / "team_results_view_GaussianSkill"
+DEFAULT_OUT_DIR = ROOT_DIR / "team_results_view_Stage5ImpactCalibrated"
 
 PIPELINE_SCORE_KEYS = (
     "stage3_rank",
@@ -53,34 +53,29 @@ PIPELINE_SCORE_KEYS = (
 
 STAGE5_SCORE_KEYS = (
     "final_score",
-    "ce_norm",
-    "fused_norm",
-    "q1_norm",
-    "q2_norm",
-    "q3_norm",
-    "core",
-    "keyword_ratio",
-    "assessment_cov",
-    "combined_coverage",
-    "must_have_floor_multiplier",
-    "core_floored",
-    "shape_mult",
-    "shaped",
-    "title_chasing_penalty",
-    "q3_residual_penalty",
-    "closed_source_penalty",
-    "ambiguity_penalty",
-    "consulting_resid_penalty",
-    "total_penalty",
-    "penalized",
-    "optional_bonus",
-    "bonused",
-    "availability_multiplier",
-    "availability_adj",
-    "location_adj",
-    "workmode_adj",
-    "notice_adj",
-    "logistics_adjustment",
+    "borda_primary",
+    "borda_sum",
+    "t1_std",
+    "rank_ce",
+    "rank_q1",
+    "rank_q2",
+    "rank_q1_amp",
+    "rank_q2_amp",
+    "sweet_bonus",
+    "tier2_raw",
+    "tier2_scaled",
+    "t2_std",
+    "target_t2_std",
+    "avail_tier",
+    "avail_unit",
+    "tier3_scaled",
+    "days_since_active",
+    "location_unit",
+    "workmode_unit",
+    "notice_unit",
+    "tier4_raw",
+    "tier4_scaled",
+    "in_top_100",
 )
 
 GATE_KEYS = (
@@ -382,7 +377,7 @@ def render_html(dataset: dict[str, Any]) -> str:
 
         cards.append(
             f"""
-            <details class="card" data-rank="{rank}" data-name="{name.lower()}" data-headline="{headline.lower()}">
+            <details class="card" data-rank="{rank}" data-name="{name.lower()}" data-headline="{headline.lower()}" data-cid="{html.escape(cid.lower())}">
               <summary class="card-summary">
                 <div class="score-col">
                   <div class="rank">#{rank}</div>
@@ -618,7 +613,7 @@ def render_html(dataset: dict[str, Any]) -> str:
     <h1>Stage 5 Team Results</h1>
     <p>Built {built} · {count} candidates ranked</p>
     <div class="toolbar">
-      <input id="search" type="search" placeholder="Search name, headline, ID…" autocomplete="off">
+      <input id="search" type="search" placeholder="Search name, headline, candidate ID…" autocomplete="off">
       <button class="btn" id="expand-all" type="button">Expand all</button>
       <button class="btn" id="collapse-all" type="button">Collapse all</button>
       <span id="stats"></span>
@@ -640,7 +635,12 @@ def render_html(dataset: dict[str, Any]) -> str:
       const q = search.value.trim().toLowerCase();
       let visible = 0;
       for (const card of cards) {{
-        const hay = (card.dataset.name + ' ' + card.dataset.headline + ' ' + card.dataset.rank).toLowerCase();
+        const hay = [
+          card.dataset.name,
+          card.dataset.headline,
+          card.dataset.rank,
+          card.dataset.cid,
+        ].filter(Boolean).join(' ').toLowerCase();
         const show = !q || hay.includes(q);
         card.classList.toggle('hidden', !show);
         if (show) visible++;

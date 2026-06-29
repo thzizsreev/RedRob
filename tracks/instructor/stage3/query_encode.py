@@ -12,7 +12,7 @@ from tracks.instructor.core.config import (
     VECTOR_DIM,
 )
 from tracks.instructor.core.onnx_embedder import InstructorONNX
-from tracks.instructor.stage3.config import Stage3Config, SubspaceWeights
+from tracks.instructor.stage3.config import FacetSpec, Stage3Config, SubspaceWeights
 
 
 def _normalize_single_block(vec: np.ndarray) -> np.ndarray:
@@ -44,12 +44,33 @@ def encode_weighted_query(
     return vec
 
 
+def build_centroid_query(
+    model: InstructorONNX,
+    facets: tuple[FacetSpec, ...],
+    subspace_weights: SubspaceWeights,
+) -> np.ndarray:
+    """Q = sum(alpha_f * encode_weighted_query(facet_text)). Alphas must sum to 1.0."""
+    weight_sum = sum(f.weight for f in facets)
+    if abs(weight_sum - 1.0) > 1e-4:
+        raise ValueError(f"Facet weights must sum to 1.0, got {weight_sum}")
+
+    vectors = [encode_weighted_query(model, f.text, subspace_weights) for f in facets]
+    alphas = [f.weight for f in facets]
+    return np.average(np.stack(vectors), axis=0, weights=alphas).astype(np.float32)
+
+
 def encode_stage3_queries(
     model: InstructorONNX,
     config: Stage3Config,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return (q1_vec, q2_vec, q3_vec) each shape (VECTOR_DIM,)."""
-    q1 = encode_weighted_query(model, config.q1_text, config.subspace_weights_q1)
+    if config.q1_facets:
+        q1 = build_centroid_query(model, config.q1_facets, config.subspace_weights_q1)
+    elif config.q1_text:
+        q1 = encode_weighted_query(model, config.q1_text, config.subspace_weights_q1)
+    else:
+        raise ValueError("Stage3Config has no Q1 facets or q1_text")
+
     q2 = encode_weighted_query(model, config.q2_text, config.subspace_weights_q2)
     q3 = encode_weighted_query(model, config.q3_text, config.subspace_weights_q3)
     return q1, q2, q3

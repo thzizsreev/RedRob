@@ -9,7 +9,12 @@ from pathlib import Path
 _CANDIDATE_ID_RE = re.compile(r"^CAND_[0-9]{7}$")
 
 
-def validate_submission_csv(path: Path, expected_rows: int = 100) -> None:
+def validate_submission_csv(
+    path: Path,
+    expected_rows: int = 100,
+    *,
+    input_candidate_ids: set[str] | None = None,
+) -> None:
     with open(path, encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames != ["candidate_id", "rank", "score", "reasoning"]:
@@ -24,6 +29,10 @@ def validate_submission_csv(path: Path, expected_rows: int = 100) -> None:
     ranks = [int(r["rank"]) for r in rows]
     if sorted(ranks) != list(range(1, expected_rows + 1)):
         raise ValueError("Ranks must be exactly 1..N each once")
+
+    cids = [r["candidate_id"] for r in rows]
+    if len(set(cids)) != len(cids):
+        raise ValueError("All candidate_ids in submission must be unique")
 
     scores = [float(r["score"]) for r in rows]
     for i, score in enumerate(scores):
@@ -42,3 +51,11 @@ def validate_submission_csv(path: Path, expected_rows: int = 100) -> None:
             raise ValueError(f"Invalid candidate_id format: {cid}")
         if not row["reasoning"].strip():
             raise ValueError(f"Empty reasoning for {cid}")
+
+    if input_candidate_ids is not None:
+        unknown = set(cids) - input_candidate_ids
+        if unknown:
+            examples = sorted(unknown)[:5]
+            raise ValueError(
+                f"Submission contains candidate_ids not in Stage 4 input. Examples: {examples}"
+            )

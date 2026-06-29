@@ -1,0 +1,32 @@
+{
+  "tier_A_keyword_rich": [
+    {"id": "CAND_0018549", "name": "Mira Verma", "note": "rank 1, keyword-rich"},
+    {"id": "CAND_0047721", "name": "Om Verma", "note": "rank 2, L2R/BM25/FAISS"},
+    {"id": "CAND_0062247", "name": "Saanvi Trivedi", "note": "rank 3, semantic search"},
+    {"id": "CAND_0044222", "name": "Dev Shah", "note": "rank 11, XGBoost L2R"}
+  ],
+  "tier_B_outcome_language": [
+    {"id": "CAND_0008425", "name": "Myra Krishnan", "note": "rank 86, primary rescue target"}
+  ],
+  "tier_C_weak_tail": [
+    {"id": "CAND_0006567", "name": "Aditya Subramanian", "note": "stage5 rank 95"},
+    {"id": "CAND_0070398", "name": "Riya Saxena", "note": "stage5 rank 96"},
+    {"id": "CAND_0093185", "name": "Reyansh Pillai", "note": "stage5 rank 97"},
+    {"id": "CAND_0013613", "name": "Advaith Joshi", "note": "stage5 rank 98"},
+    {"id": "CAND_0014683", "name": "Ritu Tiwari", "note": "stage5 rank 99"},
+    {"id": "CAND_0006418", "name": "Rahul Mukherjee", "note": "stage5 rank 100"}
+  ],
+  "tier_D_phd_research": [
+    {"id": "CAND_0070485", "name": "Krishna Rao", "note": "rank 10, IIT Madras Ph.D"}
+  ],
+  "acceptance": {
+    "CAND_0008425": {"q1_rank_max": 60, "q2_rank_max": 60},
+    "CAND_0047721": {"q1_rank_max": 25},
+    "CAND_0018549": {"q1_rank_max": 50},
+    "CAND_0062247": {"q1_rank_max": 60},
+    "tier_C_mean_q1_rank_min": 150,
+    "tier_A_max_rank_worsening": 10,
+    "tier_D_top60_forbidden": true,
+    "q1_score_std_ratio_min": 0.8
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "rule": "TC1_Q1",
+      "passed": false,
+      "detail": "q1=0.8972, need >= 0.90"
+    },
+    {
+      "rule": "TC2_Q1",
+      "passed": true,
+      "detail": "q1=0.8815, need >= 0.87"
+    },
+    {
+      "rule": "TC2_Q2",
+      "passed": true,
+      "detail": "q2=0.8783, need >= 0.86"
+    },
+    {
+      "rule": "TC3_Q1",
+      "passed": true,
+      "detail": "q1=0.8836, need >= 0.88"
+    },
+    {
+      "rule": "TC4_Q2",
+      "passed": false,
+      "detail": "q2=0.8669, need <= 0.78"
+    },
+    {
+      "rule": "TC4_Q1_minus_Q2",
+      "passed": false,
+      "detail": "gap=0.0133, need >= 0.06"
+    },
+    {
+      "rule": "TC5_Q1",
+      "passed": false,
+      "detail": "q1=0.8505, need <= 0.82"
+    },
+    {
+      "rule": "TC5_TC1_minus_Q1",
+      "passed": false,
+      "detail": "gap=0.0467, need >= 0.08"
+    }
+  ],
+  "scores": {
+    "TC1": {
+      "q1": 0.8972081542015076,
+      "q2": 0.8804973363876343
+    },
+    "TC2": {
+      "q1": 0.8814601898193359,
+      "q2": 0.8783482313156128
+    },
+    "TC3": {
+      "q1": 0.8836050033569336,
+      "q2": 0.8927812576293945
+    },
+    "TC4": {
+      "q1": 0.8801488876342773,
+      "q2": 0.8668502569198608
+    },
+    "TC5": {
+      "q1": 0.8505334854125977,
+      "q2": 0.872016429901123
+    }
+  }
+}

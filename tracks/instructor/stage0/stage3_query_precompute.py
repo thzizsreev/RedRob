@@ -2,18 +2,23 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
 
-from tracks.instructor.core.config import (
+_ROOT = Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from tracks.instructor.core.config import (  # noqa: E402
     STAGE3_QUERY_MANIFEST_FILENAME,
     STAGE3_QUERY_VECTORS_DIR,
 )
-from tracks.instructor.core.onnx_embedder import InstructorONNX
-from tracks.instructor.stage0.manifest import query_config_hash, write_stage3_query_manifest
-from tracks.instructor.stage3.config import load_stage3_config
-from tracks.instructor.stage3.query_encode import encode_stage3_queries
+from tracks.instructor.core.onnx_embedder import InstructorONNX, load_embedder, unload_embedder  # noqa: E402
+from tracks.instructor.stage0.manifest import query_config_hash, write_stage3_query_manifest  # noqa: E402
+from tracks.instructor.stage3.config import load_stage3_config  # noqa: E402
+from tracks.instructor.stage3.query_encode import encode_stage3_queries  # noqa: E402
 
 
 def save_query_vectors(
@@ -48,3 +53,24 @@ def run_stage3_query_precompute(
         query_vectors_dir=rel_dir,
     )
     return manifest_path
+
+
+def main() -> int:
+    from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE0_DIR
+
+    config_path = ROOT_DIR / "config.yaml"
+    output_dir = RUNTIME_STAGE0_DIR
+
+    print(f"Config: {config_path}")
+    print(f"Output: {output_dir}")
+    model = load_embedder()
+    try:
+        manifest = run_stage3_query_precompute(model, output_dir, config_path)
+        print(f"Done. Manifest: {manifest}")
+    finally:
+        unload_embedder(model)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Stage 5 — Deterministic composite scorer (7-layer formula).
+Stage 5 — Distribution-aware cascade scorer (v2).
 
 Run after Stage 4:
     python tracks/instructor/stage5/run.py
@@ -13,6 +13,7 @@ Outputs (under OUTPUT_DIR = artifacts/runtime/stage5/):
   {team_id}.csv
   stage5_scored.parquet
   stage5_scored_top100.parquet
+  stage5_full_scores.parquet
   stage5_summary.json
 """
 

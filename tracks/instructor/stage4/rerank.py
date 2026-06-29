@@ -8,8 +8,10 @@ from time import perf_counter
 
 import polars as pl
 
+from tracks.instructor.shared.tier2_inputs import enrich_tier2_columns, load_tier2_config
 from tracks.instructor.stage4.config import Stage4Config, load_stage4_config
 from tracks.instructor.stage4.io import (
+    load_skills_for_ids,
     load_stage3_retrieved,
     resolve_candidate_texts,
     write_stage4_outputs,
@@ -96,6 +98,13 @@ def run(
 
     keep_n = min(config.keep_n, ranked.height)
     reranked = ranked.head(keep_n).sort("stage4_rank")
+
+    tier2_config = load_tier2_config(config_path)
+    skills_by_id = load_skills_for_ids(
+        config.candidates_jsonl_path,
+        set(reranked["candidate_id"].cast(pl.Utf8).to_list()),
+    )
+    reranked = enrich_tier2_columns(reranked, skills_by_id, tier2_config)
 
     ce_scores = reranked["cross_encoder_score"]
     elapsed = perf_counter() - start

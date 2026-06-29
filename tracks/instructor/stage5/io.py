@@ -16,22 +16,25 @@ REQUIRED_STAGE4_COLUMNS = frozenset(
     {
         "candidate_id",
         "cross_encoder_score",
-        "fused_score",
         "q1_score",
         "q2_score",
         "q3_neg_sim",
-        "exp_band",
+        "fused_score",
+        "title_chasing_penalty",
+        "ambiguity_penalty",
+        "closed_source_penalty",
+        "optional_bonus",
         "in_sweet_spot",
-        "product_company_fraction",
+        "location_tier",
+        "total_years_exp",
         "career_type",
-        "stale_coding",
-        "has_any_production_role",
         "short_hop_count",
-        "title_ambiguous",
         "external_validation_score",
         "has_github",
-        "location_tier",
-        "notice_period_days",
+        "title_ambiguous",
+        "exp_band",
+        "stage3_rank",
+        "stage4_rank",
     }
 )
 
@@ -40,6 +43,7 @@ def load_stage4_reranked(path: Path) -> pl.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Missing Stage 4 output: {path}")
     df = pl.read_parquet(path)
+    print(f"Stage 4 columns: {sorted(df.columns)}")
     missing = REQUIRED_STAGE4_COLUMNS - set(df.columns)
     if missing:
         raise ValueError(f"stage4_reranked.parquet missing required columns: {sorted(missing)}")
@@ -68,18 +72,12 @@ def _load_summaries(features_path: Path, candidate_ids: set[str]) -> dict[str, s
 def _extract_join_fields(record: dict) -> dict:
     profile = record.get("profile") or {}
     signals = record.get("redrob_signals") or {}
-    assessments = signals.get("skill_assessment_scores") or {}
     return {
-        "skills": record.get("skills") or [],
-        "skill_assessment_scores": assessments,
         "last_active_date": signals.get("last_active_date"),
-        "open_to_work_flag": signals.get("open_to_work_flag"),
-        "applications_submitted_30d": signals.get("applications_submitted_30d"),
-        "recruiter_response_rate": signals.get("recruiter_response_rate"),
-        "avg_response_time_hours": signals.get("avg_response_time_hours"),
         "interview_completion_rate": signals.get("interview_completion_rate"),
         "offer_acceptance_rate": signals.get("offer_acceptance_rate"),
         "preferred_work_mode": signals.get("preferred_work_mode"),
+        "notice_period_days": signals.get("notice_period_days"),
         "profile_headline": profile.get("headline"),
     }
 
@@ -108,7 +106,7 @@ def load_candidate_join_data(
             f"{len(missing)} Stage 4 candidate(s) missing from {candidates_path}. "
             f"Examples: {examples}"
         )
-    print(f"Joined behavioral/skills data for {len(found):,} candidates")
+    print(f"Joined behavioral data for {len(found):,} candidates")
     return found
 
 
@@ -121,13 +119,30 @@ def join_scoring_inputs(
     summaries = _load_summaries(config.candidate_features_path, ids)
 
     join_rows = []
-    for cid in stage4_df["candidate_id"].cast(pl.Utf8).to_list():
-        row = dict(join_data[cid])
-        row["technical_summary_sentence"] = summaries.get(cid) or row.get("profile_headline")
+    behavioral = (
+        "last_active_date",
+        "interview_completion_rate",
+        "offer_acceptance_rate",
+        "preferred_work_mode",
+        "notice_period_days",
+    )
+    for stage_row in stage4_df.iter_rows(named=True):
+        cid = str(stage_row["candidate_id"])
+        data = join_data[cid]
+        row: dict = {}
+        for field in behavioral:
+            jsonl_val = data.get(field)
+            stage_val = stage_row.get(field)
+            row[field] = jsonl_val if jsonl_val is not None else stage_val
+        row["technical_summary_sentence"] = (
+            summaries.get(cid) or data.get("profile_headline")
+        )
         join_rows.append(row)
 
     join_df = pl.DataFrame(join_rows)
-    return pl.concat([stage4_df, join_df], how="horizontal")
+    cols_to_drop = [c for c in behavioral if c in stage4_df.columns]
+    base = stage4_df.drop(cols_to_drop) if cols_to_drop else stage4_df
+    return pl.concat([base, join_df], how="horizontal")
 
 
 def write_submission_csv(path: Path, rows: list[dict]) -> None:
@@ -156,6 +171,7 @@ def write_stage5_outputs(
 
     scored_df.write_parquet(output_dir / "stage5_scored.parquet")
     top_df.write_parquet(output_dir / "stage5_scored_top100.parquet")
+    scored_df.write_parquet(output_dir / "stage5_full_scores.parquet")
 
     with open(output_dir / "stage5_summary.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
@@ -163,6 +179,7 @@ def write_stage5_outputs(
     print(f"Wrote {csv_path}")
     print(f"Wrote {output_dir / 'stage5_scored.parquet'}")
     print(f"Wrote {output_dir / 'stage5_scored_top100.parquet'}")
+    print(f"Wrote {output_dir / 'stage5_full_scores.parquet'}")
     print(f"Wrote {output_dir / 'stage5_summary.json'}")
     return csv_path
 

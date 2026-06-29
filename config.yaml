@@ -305,14 +305,40 @@ stage0_skill:
       - lightgbm
 
 stage3:
-  q1_text: |
-    Production experience building and operating embeddings-based retrieval systems deployed
-    to real users. Handled embedding drift, index refresh cycles, and retrieval quality
-    regression in production environments. Built or operated vector database infrastructure
-    using systems such as Pinecone, Qdrant, Weaviate, Milvus, OpenSearch, Elasticsearch,
-    or FAISS at meaningful scale. Designed and maintained evaluation frameworks for ranking
-    systems including NDCG, MRR, MAP, offline-to-online correlation, and A/B testing of
-    ranking changes. Strong Python engineering skills in production ML systems.
+  q1_facets:
+    A_operational: |
+      Production experience building and operating embeddings-based retrieval systems.
+      Built vector database infrastructure using Pinecone, Qdrant, Weaviate, Milvus,
+      OpenSearch, Elasticsearch, FAISS at meaningful scale. Deployed sentence-transformers,
+      BGE, E5 embeddings to real users. Managed embedding drift and index refresh in
+      production environments.
+
+    B_outcome_language: |
+      Improved search relevance metrics in production. Rebuilt retrieval pipeline and
+      measured improvement with NDCG, MRR, or MAP. Reduced retrieval latency while
+      improving quality. Shipped ranking system to real users and tracked business
+      impact. Ran A/B tests on retrieval changes and validated offline-to-online
+      metric correlation. Migrated keyword-only retrieval to hybrid dense-plus-sparse
+      with measured gains on held-out eval sets.
+
+    C_evaluation_depth: |
+      Designed offline evaluation benchmarks for ranking systems. Built human relevance
+      judgment pipelines. Implemented NDCG, MAP, MRR measurement. Analysed
+      offline-to-online correlation. Owned A/B testing infrastructure for search or
+      recommendation systems.
+
+    D_hybrid_architecture: |
+      Built hybrid retrieval combining dense vectors with sparse BM25. Designed
+      re-ranking pipeline with cross-encoder or learning-to-rank on top of first-stage
+      retrieval. Owned end-to-end ranking pipeline from candidate generation through
+      final scoring. Integrated behavioral signals into ranking models.
+
+  q1_facet_weights:
+    A_operational: 0.15
+    B_outcome_language: 0.40
+    C_evaluation_depth: 0.30
+    D_hybrid_architecture: 0.15
+
   q2_text: |
     Six to eight years of total experience, four to five of which were spent in applied ML
     and AI engineering roles at product companies rather than consulting firms or research
@@ -385,126 +411,87 @@ stage4:
 stage5:
   team_id: "team_xxx"
   top_n: 100
-  current_date: "2026-06-22"
+  current_date: "auto"
   stage4_input_path: artifacts/runtime/stage4/stage4_reranked.parquet
   candidates_jsonl_path: data/candidates.jsonl
   candidate_features_path: artifacts/precomputed/candidate_features.parquet
   output_dir: artifacts/runtime/stage5
 
-  core_weights:
-    w_cross: 0.45
-    w_fused: 0.25
-    w_q1: 0.20
-    w_q2: 0.10
-  must_have_floor_min: 0.4
+  borda:
+    w_ce: 0.25
+    w_q1: 0.35
+    w_q2: 0.40
+    q_amplification_exponent: 1.4
 
-  must_have_keywords:
-    retrieval:
-      - embeddings
-      - semantic search
-      - retrieval
-      - rag
-      - sentence-transformers
-      - bge
-      - e5
-      - dense retrieval
-    vector_db:
-      - faiss
-      - pinecone
-      - qdrant
-      - weaviate
-      - milvus
-      - opensearch
-      - elasticsearch
-      - vector database
-      - hnsw
-    eval:
-      - ndcg
-      - mrr
-      - map
-      - a/b test
-      - evaluation
-      - ranking metrics
-      - offline-to-online
-    python:
-      - python
+  cascade:
+    tier2_ratio: 0.25
+    tier3_ratio: 0.15
+    tier4_ratio: 0.05
 
-  career_shape:
-    product_floor: 0.5
-    sweet_spot_bonus: 1.08
-    near_band_factor: 0.95
-    stale_coding_factor: 0.85
-    no_production_factor: 0.80
-
-  penalties:
-    per_hop_penalty: 0.03
-    short_hop_penalty_cap: 0.15
-    q3_penalty_weight: 0.10
-    validation_floor: 0.1
-    closed_source_penalty_value: 0.05
-    title_ambiguous_penalty: 0.02
-    near_band_penalty: 0.02
-    consulting_heavy_penalty: 0.04
-
-  optional_bonus:
-    per_category_bonus: 0.02
-    optional_bonus_cap: 0.08
-    categories:
-      fine_tuning:
-        - lora
-        - qlora
-        - peft
-        - fine-tuning
-        - instruction tuning
-      learning_to_rank:
-        - learning-to-rank
-        - lambdamart
-        - ranknet
-        - xgboost ranking
-        - lightgbm ranking
-      hr_tech:
-        - ats
-        - applicant tracking
-        - recruiting
-        - marketplace
-        - talent
-      distributed_systems:
-        - distributed systems
-        - spark
-        - ray
-        - model serving
-        - triton
-        - quantization
-        - inference optimization
-      oss:
-        - open source
-        - opensource
-        - maintainer
-        - contributor
+  tier2:
+    sweet_spot_bonus: 0.04
+    title_chasing:
+      coef: 0.03
+      cap: 0.15
+    ambiguity:
+      title_weight: 0.02
+      near_band_weight: 0.02
+    closed_source:
+      value: 0.05
+      validation_threshold: 0.1
+    optional_bonus:
+      per_category: 0.02
+      cap: 0.08
+      oss_validation_threshold: 0.1
+      categories:
+        fine_tuning:
+          - lora
+          - qlora
+          - peft
+          - fine-tuning
+          - instruction tuning
+        learning_to_rank:
+          - learning-to-rank
+          - lambdamart
+          - ranknet
+          - xgboost ranking
+          - lightgbm ranking
+        hr_tech:
+          - ats
+          - applicant tracking
+          - recruiting
+          - marketplace
+          - talent
+        distributed_systems:
+          - distributed systems
+          - spark
+          - ray
+          - model serving
+          - triton
+          - quantization
+          - inference optimization
+        oss:
+          - open source
+          - opensource
+          - maintainer
+          - contributor
 
   availability:
-    good_response_rate: 0.5
-    response_floor: 0.6
-    slow_response_hours: 24
-    response_decay_window_hours: 168
-    speed_floor: 0.7
-    fresh_days: 30
-    recency_decay_window: 180
-    recency_floor: 0.6
-    not_open_factor: 0.85
-    interview_floor: 0.7
-    offer_floor: 0.8
-    market_inactive_factor: 0.95
-    avail_min: 0.5
+    tier_a_interview_min: 0.70
+    tier_a_offer_min: 0.60
+    tier_a_recency_max_days: 30
+    tier_c_interview_max: 0.30
+    tier_c_recency_min_days: 180
 
   logistics:
-    loc_preferred_bonus: 0.03
-    loc_acceptable_bonus: 0.01
-    loc_outside_penalty: 0.10
-    workmode_fit_bonus: 0.01
-    workmode_remote_penalty: 0.02
-    notice_penalty_scale: 0.05
-    notice_penalty_cap: 0.08
-
-  enable_popularity_tiebreak: false
-  popularity_tiebreak_cap: 0.01
+    location_units:
+      preferred: 1
+      acceptable: 0
+      outside_india: -2
+      unknown: 0
+    workmode_match_unit: 1
+    notice_short_unit: 1
+    notice_medium_unit: 0
+    notice_long_unit: -1
+    notice_short_max_days: 30
+    notice_long_min_days: 90

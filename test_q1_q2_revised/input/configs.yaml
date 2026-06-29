@@ -1,0 +1,68 @@
+# ONE formula, ONE weight set.
+# Q1 = weighted centroid of q1 facets.  Q2 = weighted centroid of q2 facets.
+# Edit weights below to tune; re-run run_test.py to see all 5 cases.
+
+subspace:
+  q1: {retrieval: 0.35, infra: 0.45, eval: 0.20}
+  q2: {retrieval: 0.33, infra: 0.34, eval: 0.33}
+
+facets:
+  q1:
+    A_operational: |
+      Production experience building and operating embeddings-based retrieval systems.
+      Built vector database infrastructure using Pinecone, Qdrant, Weaviate, Milvus,
+      OpenSearch, Elasticsearch, FAISS at meaningful scale. Deployed sentence-transformers,
+      BGE, E5 embeddings to real users. Managed embedding drift and index refresh in
+      production environments.
+
+    B_outcome_language: |
+      Improved search relevance metrics in production. Rebuilt retrieval pipeline and
+      measured improvement with NDCG, MRR, or MAP. Reduced retrieval latency while
+      improving quality. Shipped ranking system to real users and tracked business
+      impact. Ran A/B tests on retrieval changes and validated offline-to-online
+      metric correlation. Migrated keyword-only retrieval to hybrid dense-plus-sparse
+      with measured gains on held-out eval sets.
+
+    C_evaluation_depth: |
+      Designed offline evaluation benchmarks for ranking systems. Built human relevance
+      judgment pipelines. Implemented NDCG, MAP, MRR measurement. Analysed
+      offline-to-online correlation. Owned A/B testing infrastructure for search or
+      recommendation systems.
+
+    D_hybrid_architecture: |
+      Built hybrid retrieval combining dense vectors with sparse BM25. Designed
+      re-ranking pipeline with cross-encoder or learning-to-rank on top of first-stage
+      retrieval. Owned end-to-end ranking pipeline from candidate generation through
+      final scoring. Integrated behavioral signals into ranking models.
+
+  q2:
+    A_product_trajectory: |
+      Six to eight years in applied ML at product companies. Shipped end-to-end
+      ranking, search, or recommendation system to real users at scale. Worked at
+      product companies, not consulting firms. Four to five years specifically in
+      applied ML or AI engineering roles with production ownership.
+
+    B_shipper_mindset: |
+      Prefer shipping a working system and iterating based on real user feedback
+      over designing a perfect system. Measured online latency, relevance, and
+      business KPIs from production systems, not benchmark leaderboards alone.
+      Portfolio shows sustained product engineering, not tutorial repos without
+      live traffic.
+
+    C_senior_ic_ownership: |
+      Owned the intelligence layer of a product end to end. Led technical decisions
+      on retrieval architecture, evaluation framework, and integration strategy.
+      Worked with product managers to define the metric to optimise. Comfortable
+      with ambiguity at an early-stage company.
+
+# Facet combination weights (alpha). Each group must sum to 1.0.
+weights:
+  q1:
+    A_operational: 0.15
+    B_outcome_language: 0.40
+    C_evaluation_depth: 0.30
+    D_hybrid_architecture: 0.15
+  q2:
+    A_product_trajectory: 0.45
+    B_shipper_mindset: 0.35
+    C_senior_ic_ownership: 0.20

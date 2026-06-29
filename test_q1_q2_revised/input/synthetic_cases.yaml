@@ -1,0 +1,56 @@
+# Synthetic profile texts only. Pass rules are in acceptance.py.
+
+cases:
+  - id: TC1
+    name: Ideal Keyword-Rich Candidate
+    text: |
+      Built and operated a hybrid retrieval system at scale using FAISS and Elasticsearch.
+      Designed sentence-transformer embeddings pipeline with BGE-large, handled embedding drift
+      and incremental index refresh. Implemented NDCG, MRR, and MAP evaluation framework with
+      offline-to-online correlation analysis. Ran A/B tests on ranking changes. Shipped
+      learning-to-rank model using XGBoost trained on click-through and engagement signals.
+      Served 10M+ users at sub-50ms p95 latency. 7 years at product companies, Flipkart and Uber.
+
+  - id: TC2
+    name: Myra Outcome Language
+    text: |
+      Rebuilt the candidate-JD matching pipeline from scratch, taking NDCG@10 from 0.72 to 0.91,
+      operating at single-digit-millisecond p95 retrieval latency. Migrated keyword-only retrieval
+      to hybrid setup combining sparse and dense vectors with domain fine-tuned models. Reduced
+      p95 retrieval latency by 60% while improving relevance on held-out eval set by 18%.
+      Spent substantial time on incremental index refresh, embedding drift monitoring, and
+      offline-online metric correlation. Fine-tuned LLaMA-2-7B and Mistral-7B for domain-specific
+      matching using preference pairs from recruiter labels. Built end-to-end ranking pipeline:
+      embedding generation, vector retrieval, learning-to-rank re-scoring, behavioral signal
+      integration. 7.8 years across Ola, Zomato, Amazon — all product companies.
+
+  - id: TC3
+    name: Strong Candidate Mixed Language
+    text: |
+      Senior ML engineer with 7 years at product companies. Shipped semantic search system
+      for 500K document corpus using sentence-transformers upgraded to bge-base, with FAISS
+      nearest-neighbor retrieval and query expansion for vocabulary mismatch. Improved search
+      relevance 35% over prior BM25 setup validated through human relevance judgments.
+      Owned ranking layer evolution from hand-tuned scoring to learning-to-rank over 9 months.
+      Designed relevance labeling pipeline using click-through and explicit human judgments.
+      Improved revenue-per-search by 12%. Qdrant and OpenSearch production experience.
+
+  - id: TC4
+    name: Good Skills Wrong Career Shape
+    text: |
+      Research engineer at academic lab with 5 years experience. Published papers on dense
+      retrieval using FAISS and Qdrant. Implemented NDCG and MAP evaluation for information
+      retrieval benchmarks. Built RAG pipeline using Pinecone and LangChain for research
+      prototype. Expert in sentence-transformers, BGE, E5 embeddings. Strong Python.
+      No production deployments to real users. Work is entirely in research context
+      with no commercial product experience.
+
+  - id: TC5
+    name: Keyword Stuffer Hollow Experience
+    text: |
+      AI Engineer with experience in RAG, LangChain, Pinecone, Qdrant, FAISS, Weaviate,
+      Milvus, OpenSearch, Elasticsearch, sentence-transformers, BGE, E5, NDCG, MRR, MAP,
+      A/B testing, embeddings, semantic search, vector databases, retrieval systems,
+      recommendation systems, LLM fine-tuning, LoRA, QLoRA, PEFT, learning-to-rank.
+      Currently building LangChain demos and tutorial projects. 3 years experience.
+      No production systems shipped to real users at scale.

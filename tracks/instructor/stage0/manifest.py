@@ -21,14 +21,18 @@ class Stage3QueryManifest:
 
 
 def query_config_hash(config: Stage3Config) -> str:
-    payload = {
-        "q1_text": config.q1_text,
+    payload: dict = {
         "q2_text": config.q2_text,
         "q3_text": config.q3_text,
         "subspace_weights_q1": config.subspace_weights_q1.as_tuple(),
         "subspace_weights_q2": config.subspace_weights_q2.as_tuple(),
         "subspace_weights_q3": config.subspace_weights_q3.as_tuple(),
     }
+    if config.q1_facets:
+        payload["q1_facets"] = {f.id: f.text for f in config.q1_facets}
+        payload["q1_facet_weights"] = {f.id: f.weight for f in config.q1_facets}
+    else:
+        payload["q1_text"] = config.q1_text
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=True).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()
 
@@ -60,7 +64,7 @@ def load_stage3_query_manifest(manifest_path: Path) -> Stage3QueryManifest:
     if not manifest_path.exists():
         raise FileNotFoundError(
             f"Missing Stage 3 query manifest: {manifest_path}. "
-            "Re-run tracks/instructor/stage0/run.py"
+            "Re-run tracks/instructor/stage0/stage3_query_precompute.py"
         )
     with open(manifest_path, encoding="utf-8") as f:
         raw = json.load(f)
@@ -88,7 +92,7 @@ def verify_query_manifest(
             "Stage 3 query config changed since last Stage 0 precompute. "
             f"manifest hash={manifest.query_config_hash[:12]}… "
             f"current hash={expected[:12]}…. "
-            "Re-run tracks/instructor/stage0/run.py"
+            "Re-run tracks/instructor/stage0/stage3_query_precompute.py"
         )
     vectors_dir = Path(manifest.query_vectors_dir)
     if not vectors_dir.is_absolute():

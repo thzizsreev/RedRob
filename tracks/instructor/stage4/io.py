@@ -102,6 +102,34 @@ def _load_passages_from_jsonl(
     return passages
 
 
+def load_skills_for_ids(
+    candidates_path: Path,
+    candidate_ids: set[str],
+) -> dict[str, list[dict]]:
+    if not candidates_path.exists():
+        raise FileNotFoundError(f"Candidates file not found: {candidates_path}")
+
+    wanted = set(candidate_ids)
+    found: dict[str, list[dict]] = {}
+    for record in iter_candidates_from_path(candidates_path):
+        cid = record.get("candidate_id")
+        if cid is None or cid not in wanted or cid in found:
+            continue
+        found[str(cid)] = list(record.get("skills") or [])
+        if len(found) == len(wanted):
+            break
+
+    missing = wanted - set(found.keys())
+    if missing:
+        examples = sorted(missing)[:5]
+        raise ValueError(
+            f"{len(missing)} candidate(s) missing from {candidates_path}. "
+            f"Examples: {examples}"
+        )
+    print(f"Loaded skills for {len(found):,} candidates from {candidates_path.name}")
+    return found
+
+
 def resolve_candidate_texts(
     candidate_ids: list[str],
     config: Stage4Config,

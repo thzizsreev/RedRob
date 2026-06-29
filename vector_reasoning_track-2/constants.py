@@ -1,4 +1,4 @@
-"""Hardcoded strings, scores, and hyperparameters from vector_reasoning_steering_plan_2_final.md."""
+"""Hardcoded strings, scores, and hyperparameters from vector_steering_plan_3_sonar.md."""
 
 from __future__ import annotations
 
@@ -109,12 +109,16 @@ s_behav = 0.19
 
 # --- Fixed hyperparameters ---
 
-GAMMA = 0.60
-DELTA = 0.25
-MAX_LENGTH = 30
-TEMPERATURE = 0.85
-TOP_P = 0.92
-DO_SAMPLE = True
+GAMMA = 0.55
+DELTA = 0.30
+MAX_SEQ_LEN = 64
+BEAM_SIZE = 5
+TARGET_LANG = "eng_Latn"
+SOURCE_LANG = "eng_Latn"
+
+VECTOR_DIM = 1024
+SONAR_ENCODER = "text_sonar_basic_encoder"
+SONAR_DECODER = "text_sonar_basic_decoder"
 
 
 def bucket(score: float) -> str:

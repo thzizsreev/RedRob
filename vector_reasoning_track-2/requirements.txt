@@ -1,9 +1,11 @@
-# For LangVAE decode (--decode langvae), use pinned deps on Python 3.11:
-#   pip install -r requirements-pinned.txt
+# Plan 3 SONAR — install in this order (Python 3.10 recommended)
 #
-# For template_hybrid only (no LangVAE), minimal deps suffice:
-torch>=2.0.1
-transformers>=4.35.0
-numpy>=1.24.0
-langvae>=0.3.0
-pythae>=0.1.1
+# pip install torch==2.0.1 torchaudio==2.0.2
+# pip install fairseq2==0.2.1 --extra-index-url https://fair.pkg.atmeta.com/fairseq2/whl/pt2.0.1/cpu/
+# pip install sonar-space==0.2.1 numpy==1.24.0
+
+torch==2.0.1
+torchaudio==2.0.2
+fairseq2==0.2.1
+sonar-space==0.2.1
+numpy==1.24.0

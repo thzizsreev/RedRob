@@ -1,54 +1,60 @@
-# Vector Reasoning Steering Experiment
+# Vector Reasoning Track 2 — Plan 3 SONAR
 
-Isolated test of Plan 2 — template + candidate blend with dimensional anchor steering and dual decode modes.
+Isolated experiment: encode → steer → decode in SONAR's native **1024d** space.
 
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [docs/vector_steering_plan_2_final.md](../docs/vector_steering_plan_2_final.md).
+Source plan (read-only): [docs/vector_steering_plan_3_sonar.md](../docs/vector_steering_plan_3_sonar.md)
 
-## Quick start (recommended)
+## Requirements
 
-```bash
-cd vector_reasoning_test
-pip install -r requirements.txt
-python precompute.py
-python run_experiment.py
-```
+- **Python 3.10 or 3.11**
+- **Linux or WSL** — `fairseq2n` native wheels are not published for Windows; native Windows pip install will fail at `fairseq2n`
+- ~2.4GB model download on first run (cached in `~/.cache/fairseq2/`)
 
-Output: `results/output.json` with related recruiter reasoning (default `template_hybrid` decode).
+## Platform notes
 
-## Decode modes
+| Environment | Supported |
+|-------------|-----------|
+| Linux (Python 3.10/3.11) | Yes |
+| WSL Ubuntu (Python 3.10/3.11 + `python3-venv`) | Yes |
+| Windows native Python | **No** — use WSL |
 
-| Mode | Command | When to use |
-|------|---------|-------------|
-| `template_hybrid` | `python run_experiment.py` | **Default.** Reliable output with template + resume-specific clauses |
-| `langvae` | `python run_experiment.py --decode langvae` | After `validate_langvae.py` passes on Python 3.11 |
-
-## LangVAE environment (optional)
-
-LangVAE decode requires a pinned stack matching the HF checkpoint:
+Quick check:
 
 ```bash
-# Python 3.11 recommended
-pip install -r requirements-pinned.txt
-python validate_langvae.py
+python validate_sonar.py
 ```
 
-If the gate fails, stay on `--decode template_hybrid`.
+## Install (Linux / WSL)
+
+```bash
+cd vector_reasoning_track-2
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch==2.0.1 torchaudio==2.0.2
+pip install fairseq2==0.2.1 --extra-index-url https://fair.pkg.atmeta.com/fairseq2/whl/pt2.0.1/cpu/
+pip install sonar-space==0.2.1 numpy==1.24.0
+python validate_sonar.py
+```
+
+If the fairseq2 wheel index fails, see the conda fallback in the plan doc.
+
+## Run
+
+```bash
+python precompute.py      # once — 15 vectors in vectors/ (1024d)
+python run_experiment.py  # blend + steer + decode → results/output.json
+```
+
+## Output
+
+Final `reasoning` is **three decoded clauses only** (no template prefix). Each clause is produced by decoding a steered 1024d vector via SONAR beam search.
 
 ## Models
 
 | Role | Model |
 |------|--------|
-| Encode (templates, anchors, resume) | LangVAE encoder → 128d μ latent |
-| Decode (`template_hybrid`) | Deterministic [`compose.py`](compose.py) |
-| Decode (`langvae`) | LangVAE `neuro-symbolic-ai/eb-langvae-bert-base-cased-gpt2-l128` |
+| Encode | `text_sonar_basic_encoder` |
+| Decode | `text_sonar_basic_decoder` |
 
-LangVAE checkpoint downloads from HuggingFace on first run (~800MB, cached locally).
+Hyperparams: `GAMMA=0.55`, `DELTA=0.30`, `MAX_SEQ_LEN=64`.
 
-## Inputs
-
-All test inputs are hardcoded in [`constants.py`](constants.py):
-
-- `resume_tech_text`, `resume_career_text`, `resume_behav_text`
-- `s_tech`, `s_career`, `s_behav`
-
-No imports from `tracks/` or other repo packages.
+All code and outputs stay in this folder. No imports from `tracks/`.

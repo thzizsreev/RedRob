@@ -61,7 +61,7 @@ def validate_roundtrip() -> tuple[int, int]:
 
 
 def main() -> int:
-    print("LangVAE environment validation")
+    print("LangVAE decode validation (Plan 1)")
     print(f"Python {sys.version.split()[0]}")
     print()
 
@@ -86,13 +86,12 @@ def main() -> int:
 
     total = len(TEST_SENTENCES)
     if passed == total:
-        print("Gate PASSED - LangVAE encode->decode is usable for --decode langvae")
+        print("Gate PASSED - LangVAE encode->decode is usable")
         return 0
 
     print(
         f"Gate FAILED ({passed}/{total} passed). "
-        "Use Python 3.11 and requirements-pinned.txt, then re-run. "
-        "Default to --decode template_hybrid until gate passes."
+        "Use Python 3.11 and requirements-pinned.txt, then re-run."
     )
     return 1
 

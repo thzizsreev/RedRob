@@ -1,0 +1,5 @@
+vectors/*.npy
+results/*.json
+.venv/
+.venv-wsl/
+.venv-test/

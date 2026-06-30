@@ -1,0 +1,23 @@
+{
+  "phrase_tech": {
+    "input": "demonstrated strong production expertise in retrieval systems with measurable latency impact",
+    "0.3": "Exhibited exceptional production expertise in retrieval systems with a measurable latency impact.",
+    "0.7": "Exhibited superior knowledge of production retrieval systems with observable latency implications.",
+    "1.0": "Expressed significant ability in production retrieval systems with observable latency consequences.",
+    "1.3": "Showed a remarkable ability to produce goods in retrieval systems with measurable latency disruption."
+  },
+  "phrase_career": {
+    "input": "senior engineer with clear ownership trajectory and end-to-end system responsibility",
+    "0.3": "A senior engineer with a clear ownership trajectory and responsibility for the entire system's life cycle.",
+    "0.7": "A senior engineer with a clear ownership trajectory and responsibility for the entire system's lifespan.",
+    "1.0": "A highly senior engineer with a clear ownership path and responsibility for the entire system's life cycle.",
+    "1.3": "The system's entire life cycle is attributed to the responsible engineer, who has a well-defined ownership trajectory."
+  },
+  "phrase_behav": {
+    "input": "actively engaged on platform with strong availability and responsiveness signals",
+    "0.3": "Currently active on the platform with potent alerts of availability and responsiveness.",
+    "0.7": "Engaged with the platform by utilizing strong availability and responsiveness indicators.",
+    "1.0": "Started out on the platform with robust availability and responsiveness signals.",
+    "1.3": "Useful on platform, consistently receiving robust communication signals of availability and responsiveness."
+  }
+}

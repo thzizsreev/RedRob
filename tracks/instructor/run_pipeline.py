@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from time import perf_counter
 
 _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
@@ -174,7 +175,10 @@ def build_config(args: argparse.Namespace) -> RankingPipelineConfig:
 def main() -> None:
     args = parse_args()
     config = build_config(args)
+    start_time = perf_counter()
     result = run_ranking_pipeline(config)
+    total = perf_counter() - start_time
+    print(f"Pipeline completed in {total:.2f} seconds")
     print(f"\nFinal submission: {result.final_csv_path}")
 
 

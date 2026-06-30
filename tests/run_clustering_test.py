@@ -25,7 +25,7 @@ from tracks.naive.config import (
     NAIVE_INDEX_FILENAME,
     NAIVE_VECTOR_DIM,
 )
-from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, SAMPLE1K_PATH, CANDIDATES_JSONL_PATH
+from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, SAMPLE1K_PATH, CANDIDATES_JSONL_PATH, TEST_RUNS_DIR
 
 # --- edit before run ---
 TRACK = "instructor"  # "naive" | "instructor"
@@ -40,13 +40,13 @@ ENABLE_ID_SEARCH = True
 if TRACK == "naive":
     # Naive precompute writes to tracks/naive/artifacts/ (no per-sample subdir)
     ARTIFACTS_PATH = NAIVE_ARTIFACTS_DIR
-    OUTPUT_DIR = ROOT_DIR / "test_output" / "clustering" / "naive" / SAMPLE_TAG
+    OUTPUT_DIR = TEST_RUNS_DIR / "clustering" / "naive" / SAMPLE_TAG
     INDEX_FILENAME = NAIVE_INDEX_FILENAME
     VECTOR_DIM = NAIVE_VECTOR_DIM
 elif TRACK == "instructor":
     # Instructor precompute writes to artifacts/<sample>/ (e.g. artifacts/sample5k/)
     ARTIFACTS_PATH = ARTIFACTS_DIR / SAMPLE_TAG
-    OUTPUT_DIR = ROOT_DIR / "test_output" / "clustering" / "instructor" / SAMPLE_TAG
+    OUTPUT_DIR = TEST_RUNS_DIR / "clustering" / "instructor" / SAMPLE_TAG
     INDEX_FILENAME = INSTRUCTOR_INDEX
     VECTOR_DIM = INSTRUCTOR_VECTOR_DIM
 else:

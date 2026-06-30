@@ -29,7 +29,7 @@ from tracks.instructor.stage1 import (
 )
 from tracks.instructor.core.config import INDEX_FILENAME as INSTRUCTOR_INDEX
 from tracks.instructor.core.config import VECTOR_DIM as INSTRUCTOR_VECTOR_DIM
-from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR
+from tracks.shared.paths import ARTIFACTS_DIR, ROOT_DIR, TEST_RUNS_DIR
 
 # --- edit before run ---
 TRACK = "instructor"  # instructor only for Stage 1
@@ -41,7 +41,7 @@ OVERWRITE_CLUSTER = False
 if TRACK == "instructor":
     ARTIFACTS_PATH = ARTIFACTS_DIR / SAMPLE_TAG
     STAGE1_PATH = ARTIFACTS_PATH / STAGE1_DIRNAME
-    OUTPUT_DIR = ROOT_DIR / "test_output" / "filtering" / "instructor" / SAMPLE_TAG
+    OUTPUT_DIR = TEST_RUNS_DIR / "filtering" / "instructor" / SAMPLE_TAG
     INDEX_FILENAME = INSTRUCTOR_INDEX
     VECTOR_DIM = INSTRUCTOR_VECTOR_DIM
 else:

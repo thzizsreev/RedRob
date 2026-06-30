@@ -23,7 +23,7 @@ score = candidate_vector @ Q
 - `subspace_weights` — fixed per Q1/Q2 (retrieval / infra / eval block mix). Production values.
 - `alpha_f` — **the only tuning knobs**: how much each facet contributes to the final Q1 or Q2 vector.
 
-No per-candidate weighting. No multiple configs. One weight block in `test_q1_q2_revised/input/configs.yaml`.
+No per-candidate weighting. No multiple configs. One weight block in `experiments/q1_q2/input/configs.yaml`.
 
 ## Facets
 
@@ -33,7 +33,7 @@ No per-candidate weighting. No multiple configs. One weight block in `test_q1_q2
 **Q2 (3 facets)**  
 `A_product_trajectory`, `B_shipper_mindset`, `C_senior_ic_ownership`
 
-Texts and weights: `test_q1_q2_revised/input/configs.yaml`.
+Texts and weights: `experiments/q1_q2/input/configs.yaml`.
 
 ## Pass criteria (five synthetic cases)
 
@@ -48,7 +48,7 @@ Texts and weights: `test_q1_q2_revised/input/configs.yaml`.
 Tune `weights.q1` and `weights.q2` until all pass. Re-run:
 
 ```bash
-python test_q1_q2_revised/run_test.py
+python experiments/q1_q2/run_test.py
 ```
 
 ## After pass
@@ -59,4 +59,4 @@ Copy facet texts + alphas + subspace weights into `config.yaml` / Stage 3 query 
 
 - Vectors: `artifacts/runtime/stage0/candidate_vectors.npy`
 - ONNX: `onnx/models/instructor-large-encoder.onnx`
-- Test cases: `test_q1_q2_revised/input/synthetic_cases.yaml`
+- Test cases: `experiments/q1_q2/input/synthetic_cases.yaml`

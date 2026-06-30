@@ -2,6 +2,8 @@
 
 Hackathon submission system for ranking ~100,000 AI-engineering candidates against a senior retrieval/ranking JD. The main track (**INSTRUCTOR / Track A**) is a six-stage funnel: offline embedding precompute, cluster filtering, hard tabular gate, hybrid retrieval, cross-encoder reranking, and a deterministic seven-layer composite scorer. Output is a top-100 CSV with per-candidate reasoning.
 
+**Repository layout:** see [docs/REPO_LAYOUT.md](docs/REPO_LAYOUT.md) — production code in `tracks/`, experiments in `experiments/`, generated views in `outputs/`, utilities in `tools/`.
+
 | Track | Model | Vector dim | Role |
 |-------|-------|------------|------|
 | **INSTRUCTOR (Track A)** | `hkunlp/instructor-large` via ONNX CUDA | 2304 (3×768 blocks) | Full Stage 0–5 pipeline → `team_xxx.csv` |

@@ -1,5 +1,0 @@
-vectors/*.npy
-results/*.json
-__pycache__/
-.venv/
-*.pyc

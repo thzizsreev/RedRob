@@ -51,18 +51,19 @@ models/encoder_test/
 models/instructor_large_onnx/
 models/ort_test/
 
-# Stage 5 team view outputs (regenerate: python build_team_view.py)
-team_results_view*/
-!team_results_view/
-!team_results_view/.gitkeep
-team_results_view*/**
-!team_results_view/**/
-!team_results_view/**/.gitkeep
+# Generated HTML/JSON views (regenerate via tools/)
+outputs/team_views/**
+!outputs/team_views/
+!outputs/team_views/.gitkeep
+outputs/eliminations/**
+!outputs/eliminations/
+!outputs/eliminations/.gitkeep
+outputs/test_runs/**
+!outputs/test_runs/
+!outputs/test_runs/.gitkeep
 
-# Eliminations view outputs (regenerate: python build_eliminations_view.py)
-eliminations_view/output/**
-!eliminations_view/output/
-!eliminations_view/output/.gitkeep
+# Legacy root-level view dirs (pre-reorg)
+team_results_view*/
 
 # Naive track generated outputs
 tracks/naive/artifacts/**
@@ -80,25 +81,24 @@ stage4_reranked_collection/
 torch_install.log
 *.log
 
-# Stage 3 skill-track test harness (regenerate: test_stage_3/precompute/run.py → runner/run.py)
-test_stage_3/precompute/artifacts/**
-!test_stage_3/precompute/artifacts/
-!test_stage_3/precompute/artifacts/.gitkeep
-test_stage_3/runner/outputs/**
-!test_stage_3/runner/outputs/
-!test_stage_3/runner/outputs/.gitkeep
+# Stage 3 skill-track test harness (regenerate: experiments/stage3/precompute/run.py → runner/run.py)
+experiments/stage3/precompute/artifacts/**
+!experiments/stage3/precompute/artifacts/
+!experiments/stage3/precompute/artifacts/.gitkeep
+experiments/stage3/runner/outputs/**
+!experiments/stage3/runner/outputs/
+!experiments/stage3/runner/outputs/.gitkeep
 
-# Test harness outputs (tests/run_clustering_test.py, tests/run_filtering_test.py, rank.py)
-#   test_output/clustering/, test_output/filtering/, test_output/retrieval/
-test_output/**
-!test_output/
-!test_output/.gitkeep
+# K-means experiment outputs
+experiments/kmeans/precomputed/**
+experiments/kmeans/outputs/**
 
-# K-means precompute + run outputs (kmeans/precompute.py, kmeans/run.py)
-kmeans/precomputed/**
-kmeans/outputs/**
+# Honeypot research pipeline outputs
+experiments/honeypot/output/**
+!experiments/honeypot/output/
+!experiments/honeypot/output/.gitkeep
 
-# K-means filter outputs (experimental Stage 1 alternative)
+# K-means filter scratch (experimental Stage 1 alternative)
 data/filter_kmeans/
 
 # Editor / IDE
@@ -109,8 +109,3 @@ data/filter_kmeans/
 # OS junk
 .DS_Store
 Thumbs.db
-
-# Honeypot research pipeline outputs (LLM study — not production)
-honeypot/output/**
-!honeypot/output/
-!honeypot/output/.gitkeep

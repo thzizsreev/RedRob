@@ -1,7 +1,0 @@
-# For LangVAE decode, use pinned deps on Python 3.11:
-#   pip install -r requirements-pinned.txt
-torch>=2.0.1
-transformers>=4.35.0
-numpy>=1.24.0
-langvae>=0.3.0
-pythae>=0.1.1

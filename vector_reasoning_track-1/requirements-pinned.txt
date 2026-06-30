@@ -1,5 +1,0 @@
-torch==2.0.1
-transformers==4.35.0
-numpy==1.24.0
-langvae==0.3.0
-pythae==0.1.1

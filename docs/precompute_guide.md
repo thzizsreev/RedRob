@@ -444,7 +444,7 @@ tracks/naive/artifacts/
 ### Rank output (Track A)
 
 ```
-test_output/retrieval/retrieval_results_<sample>.json
+outputs/test_runs/retrieval/retrieval_results_<sample>.json
 ```
 
 ---

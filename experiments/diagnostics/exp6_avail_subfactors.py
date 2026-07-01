@@ -62,24 +62,27 @@ def run_exp6(
     missing_counts = {name: 0 for name in FACTOR_NAMES}
     mismatch_count = 0
 
-    parquet_am = {
-        cid: float(row["availability_multiplier"])
-        for row in df.select("candidate_id", "availability_multiplier").iter_rows(named=True)
-        for cid in [str(row["candidate_id"])]
-    }
+    if "availability_multiplier" in df.columns:
+        parquet_am = {
+            str(row["candidate_id"]): float(row["availability_multiplier"])
+            for row in df.select("candidate_id", "availability_multiplier").iter_rows(named=True)
+        }
+    else:
+        parquet_am = None
 
     for cid in df["candidate_id"].cast(pl.Utf8).to_list():
         signals = signals_by_id[cid]
         factors, missing = compute_all_factors_with_missing(signals, current_date, cfg)
         recomputed = availability_multiplier(factors, cfg)
-        expected = parquet_am[cid]
-        if abs(recomputed - expected) > 0.001:
-            mismatch_count += 1
-            warnings.warn(
-                f"Availability mismatch for {cid}: recomputed={recomputed:.4f}, "
-                f"parquet={expected:.4f}",
-                stacklevel=2,
-            )
+        if parquet_am is not None:
+            expected = parquet_am[cid]
+            if abs(recomputed - expected) > 0.001:
+                mismatch_count += 1
+                warnings.warn(
+                    f"Availability mismatch for {cid}: recomputed={recomputed:.4f}, "
+                    f"parquet={expected:.4f}",
+                    stacklevel=2,
+                )
 
         for name in FACTOR_NAMES:
             if missing[name]:
@@ -89,6 +92,12 @@ def run_exp6(
     if mismatch_count:
         print(
             f"WARNING: {mismatch_count} availability_multiplier mismatches (>0.001 tolerance)",
+            file=sys.stderr,
+        )
+    elif parquet_am is None:
+        print(
+            "Note: stage5_scored.parquet uses v2 avail_unit tiers; "
+            "skipped legacy availability_multiplier validation.",
             file=sys.stderr,
         )
 

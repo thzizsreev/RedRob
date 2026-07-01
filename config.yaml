@@ -495,3 +495,24 @@ stage5:
     notice_long_unit: -1
     notice_short_max_days: 30
     notice_long_min_days: 90
+
+stage6:
+  team_id: "team_xxx"
+  top_n: 100
+  stage5_top100_path: artifacts/runtime/stage5/stage5_scored_top100.parquet
+  candidates_jsonl_path: data/candidates.jsonl
+  reasoning_raw_path: artifacts/precomputed/reasoning_raw.parquet
+  reasoning_lookup_path: artifacts/precomputed/reasoning_lookup.json
+  use_reasoning_lookup: auto   # auto | true | false — skip paraphrase when lookup complete
+  candidate_features_path: artifacts/precomputed/candidate_features.parquet
+  paraphraser_dir: models/paraphraser
+  output_dir: artifacts/runtime/stage6
+  ort_intra_op_threads: 1
+  estimated_session_mb: 700
+  memory_reserve_ratio: 0.25
+  max_workers: null
+  model_id: humarin/chatgpt_paraphraser_on_T5_base
+  input_prefix: "paraphrase: "
+  max_length: 128
+  top_p: 0.92
+  repetition_penalty: 1.3

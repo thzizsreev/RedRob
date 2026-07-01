@@ -1,4 +1,4 @@
-"""Parquet column contract for Stage 5 diagnostics."""
+"""Parquet column contract for Stage 5 v2 diagnostics."""
 
 from __future__ import annotations
 
@@ -17,47 +17,44 @@ REQUIRED_COLUMNS = frozenset(
         "q2_score",
         "q3_neg_sim",
         "skill_score",
-        "ce_norm",
-        "fused_norm",
-        "q1_norm",
-        "q2_norm",
-        "q3_norm",
-        "core",
-        "core_floored",
-        "shaped",
-        "penalized",
-        "bonused",
-        "availability_adj",
+        "rank_ce",
+        "rank_q1",
+        "rank_q2",
+        "borda_sum",
+        "borda_primary",
+        "t1_std",
+        "sweet_bonus",
+        "tier2_raw",
+        "tier2_scaled",
+        "t2_std",
+        "avail_tier",
+        "avail_unit",
+        "tier3_scaled",
+        "t3_std",
+        "location_unit",
+        "workmode_unit",
+        "notice_unit",
+        "tier4_raw",
+        "tier4_scaled",
+        "t4_std",
         "final_score",
-        "keyword_ratio",
-        "assessment_cov",
-        "combined_coverage",
-        "must_have_floor_multiplier",
         "product_company_fraction",
         "in_sweet_spot",
         "exp_band",
         "stale_coding",
         "has_any_production_role",
-        "shape_mult",
         "title_chasing_penalty",
-        "q3_residual_penalty",
         "closed_source_penalty",
         "ambiguity_penalty",
-        "consulting_resid_penalty",
-        "total_penalty",
+        "optional_bonus",
         "short_hop_count",
         "title_ambiguous",
         "career_type",
         "external_validation_score",
         "has_github",
-        "optional_bonus",
-        "availability_multiplier",
-        "location_adj",
-        "workmode_adj",
-        "notice_adj",
-        "logistics_adjustment",
         "location_tier",
         "notice_period_days",
+        "days_since_active",
     }
 )
 
@@ -71,54 +68,65 @@ GROUP_A_SIGNALS = [
 ]
 
 GROUP_B_SIGNALS = [
-    "ce_norm",
-    "fused_norm",
-    "q1_norm",
-    "q2_norm",
-    "q3_norm",
-    "core",
-    "core_floored",
-    "shaped",
-    "penalized",
-    "bonused",
-    "availability_adj",
+    "borda_sum",
+    "borda_primary",
+    "tier2_scaled",
+    "tier3_scaled",
+    "tier4_scaled",
     "final_score",
 ]
 
 GROUP_C_SIGNALS = [
     "product_company_fraction",
     "external_validation_score",
-    "must_have_floor_multiplier",
-    "shape_mult",
-    "total_penalty",
+    "sweet_bonus",
     "optional_bonus",
-    "availability_multiplier",
+    "title_chasing_penalty",
+    "ambiguity_penalty",
+    "closed_source_penalty",
+    "avail_unit",
+    "location_unit",
+    "workmode_unit",
+    "notice_unit",
+    "tier4_raw",
 ]
 
 NORMALIZED_SIGNALS = frozenset(
-    {"ce_norm", "fused_norm", "q1_norm", "q2_norm", "q3_norm"}
+    {"borda_primary", "tier2_scaled", "tier3_scaled", "tier4_scaled"}
 )
 
 RETRIEVAL_CORRELATION_SIGNALS = [
-    "ce_norm",
-    "fused_norm",
-    "q1_norm",
-    "q2_norm",
-    "q3_norm",
+    "cross_encoder_score",
+    "fused_score",
+    "q1_score",
+    "q2_score",
+    "q3_neg_sim",
     "skill_score",
+    "borda_primary",
 ]
 
 ALL_CORRELATION_SIGNALS = GROUP_A_SIGNALS + GROUP_B_SIGNALS + GROUP_C_SIGNALS
 
 LAYER_TRANSITIONS = [
-    ("L0→L1", "ce_norm", "core"),
-    ("L1→L2", "core", "core_floored"),
-    ("L2→L3", "core_floored", "shaped"),
-    ("L3→L4", "shaped", "penalized"),
-    ("L4→L5", "penalized", "bonused"),
-    ("L5→L6", "bonused", "availability_adj"),
-    ("L6→L7", "availability_adj", "final_score"),
+    ("T0→T1", "borda_sum", "borda_primary"),
+    ("T1→T2", "borda_primary", "score_after_t2"),
+    ("T2→T3", "score_after_t2", "score_after_t3"),
+    ("T3→T4", "score_after_t3", "final_score"),
 ]
+
+
+def enrich_scored_df(df: pl.DataFrame) -> pl.DataFrame:
+    """Add cumulative tier scores used by layer-stability and availability experiments."""
+    return df.with_columns(
+        [
+            (pl.col("borda_primary") + pl.col("tier2_scaled")).alias("score_after_t2"),
+            (
+                pl.col("borda_primary")
+                + pl.col("tier2_scaled")
+                + pl.col("tier3_scaled")
+            ).alias("score_after_t3"),
+        ]
+    )
 
 
 def validate_columns(df: pl.DataFrame) -> None:

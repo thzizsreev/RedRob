@@ -1,0 +1,7 @@
+onnxruntime
+transformers
+sentencepiece
+torch
+polars
+pyyaml
+psutil

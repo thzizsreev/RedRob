@@ -1,0 +1,27 @@
+[
+  {
+    "id": "template_01",
+    "candidate_id": "CAND_0006418",
+    "text": "Machine Learning Engineer | Search, Ranking & Retrieval"
+  },
+  {
+    "id": "template_02",
+    "candidate_id": "CAND_0043228",
+    "text": "Applied ML Engineer | Applied ML | Building intelligent products"
+  },
+  {
+    "id": "template_03",
+    "candidate_id": "CAND_0051630",
+    "text": "Machine Learning Engineer | ML, NLP, Recommendation Systems"
+  },
+  {
+    "id": "template_04",
+    "candidate_id": "CAND_0011432",
+    "text": "Senior Data Scientist | Applied ML | Building intelligent products"
+  },
+  {
+    "id": "template_05",
+    "candidate_id": "CAND_0026532",
+    "text": "Recommendation Systems Engineer | Search, Ranking & Retrieval"
+  }
+]

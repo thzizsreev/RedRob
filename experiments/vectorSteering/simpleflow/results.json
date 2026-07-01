@@ -1,23 +1,50 @@
 {
-  "phrase_tech": {
-    "input": "demonstrated strong production expertise in retrieval systems with measurable latency impact",
-    "0.3": "Exhibited exceptional production expertise in retrieval systems with a measurable latency impact.",
-    "0.7": "Exhibited superior knowledge of production retrieval systems with observable latency implications.",
-    "1.0": "Expressed significant ability in production retrieval systems with observable latency consequences.",
-    "1.3": "Showed a remarkable ability to produce goods in retrieval systems with measurable latency disruption."
+  "phrase_A": {
+    "input": "Mira Verma carries a sixty-day notice period that delays the start date two months, while the role requires sub-thirty-day availability for immediate onboarding",
+    "0.01": "The start date of Mira Verma is postponed by a two-month period due to the sixty-day notice period, and the role necessitates sub-thirty-day availability for immediate",
+    "0.3": "The start date of Mira Verma is postponed for two months due to a sixty-day notice period, and the role necessitates sub-thirty-day availability for immediate onboarding.",
+    "0.7": "Mira Verma has a sixty-day notice period which postpones start date by two months and allows for onboarding of the role within 60 days, but the role requires availability within that timeframe (sub-thirt",
+    "1.0": "The job opening in Mira Verma is postponed for two months due to the sixty-day notice period, and it requires sub-thirty days of availability to ensure onboarding on an immediate basis.",
+    "1.3": "With only sixty days notice, Mira Verma has two extra months before the role starts, but for immediate onboarding the position, it requires underthirty-day availability."
   },
-  "phrase_career": {
-    "input": "senior engineer with clear ownership trajectory and end-to-end system responsibility",
-    "0.3": "A senior engineer with a clear ownership trajectory and responsibility for the entire system's life cycle.",
-    "0.7": "A senior engineer with a clear ownership trajectory and responsibility for the entire system's lifespan.",
-    "1.0": "A highly senior engineer with a clear ownership path and responsibility for the entire system's life cycle.",
-    "1.3": "The system's entire life cycle is attributed to the responsible engineer, who has a well-defined ownership trajectory."
+  "phrase_B": {
+    "input": "Mira Verma, despite the role requiring sub-thirty-day availability, carries a sixty-day notice period that delays the earliest start date by two full months",
+    "0.01": "Despite the role necessitating a brief opening, Mira Verma is subject to a sixty-day notice period that postpones the earliest start date by two months.",
+    "0.3": "Despite the role necessitating only under-thirty days for entry, Mira Verma is subject to a sixty-day notice period that postpones the earliest start date by two full months",
+    "0.7": "Although the role requires availability in under thirty days, Mira Verma is subject to a sixty-day notice period that puts a two-month delay over the earliest start date.",
+    "1.0": "Even though Mira Verma's role requires just under 30 days to start, the notice period of sixty days leaves the earliest commencement date two months later than it did before.",
+    "1.3": "The earliest start date is postponed by two full months due to the requirement of Mira Verma having a notice period of sixty days in the role that would require her to be available within thirty-thirty days"
+  },
+  "phrase_C": {
+    "input": "The role's sub-thirty-day onboarding preference creates friction with Mira Verma's sixty-day notice period, pushing the earliest start date two months beyond the hiring timeline",
+    "0.01": "The sub-thirty-day onboarding option creates a problem with Mira Verma's sixty-day notice period, which is two months past the hiring deadline.",
+    "0.3": "The role's sub-thirty-day onboarding option creates a problem with Mira Verma's sixty-day notice period, which is two months past the initial start date.",
+    "0.7": "The role's sub-thirty-day onboarding option causes friction with Mira Verma's sixty-day notice period, making the earliest start date two months earlier than the hiring deadline.",
+    "1.0": "Due to the sub-thirty-day onboarding preference, the earliest start date of two months for the role is delayed by two months as Mira Verma has yet to give notice, which creates friction.",
+    "1.3": "The less-than-thirty-day onboarding ETA leaves a significant portion of the selection process in two months, which can cause frustration with Mira Verma's six-day notice period before the starting date."
   },
   "phrase_behav": {
-    "input": "actively engaged on platform with strong availability and responsiveness signals",
-    "0.3": "Currently active on the platform with potent alerts of availability and responsiveness.",
-    "0.7": "Engaged with the platform by utilizing strong availability and responsiveness indicators.",
-    "1.0": "Started out on the platform with robust availability and responsiveness signals.",
-    "1.3": "Useful on platform, consistently receiving robust communication signals of availability and responsiveness."
+    "input": "Mira Verma's internal impact evidence is strong with a documented 12% revenue improvement at Uber and a 6% retention lift at Flipkart, yet no public papers, open-source projects, or conference talks exist to allow independent verification of this depth, and her sixty-day notice period pushes the earliest start two months beyond the role's sub-thirty-day preference",
+    "0.01": "Mira Verma's internal impact evidence includes a documented 12% revenue increase at Uber and a 6% retention increase at Flipkart, but there are no public papers, open-source projects, or conference talks that can provide",
+    "0.3": "Mira Verma's internal impact evidence includes a documented revenue increase of 12 percent at Uber and a 6 percent rise at Flipkart, but there are no public papers, open-source projects, or conference talks that can provide",
+    "0.7": "Mira Verma's internal impact evidence includes a documented 12% revenue increase at Uber and a 6% retention increase at Flipkart, but there is no public document, open-source project, or conference talk available to independently",
+    "1.0": "Mira Verma's internal impact evidence, including a documented 12% revenue increase at Uber and a 6% retention boost at Flipkart, is robust, but there are no public papers, open-source projects, or conference",
+    "1.3": "Mira Verma's internal impact evidence, such as a documented revenue increase of 12%) from Uber and a 6%) raise in Flipkart's retention, is unparalleled by any public papers, open-source projects, or"
+  },
+  "phrase_pt1": {
+    "input": "Mira Verma's production impact is well-documented through measurable outcomes including a 12% revenue-per-search improvement at Uber and a 6% retention lift at Flipkart, however no public papers, open-source contributions, or external conference talks exist to independently validate the technical depth of the systems she describes",
+    "0.01": "Mira Verma's production results, which show a 12% increase in revenue per search at Uber and a 6% rise in retention at Flipkart, are measurable, but there is no evidence available to support the technical",
+    "0.3": "Mira Verma's production outcomes, which show a 12% rise in revenue per search at Uber and a 6% increase in retention at Flipkart, are measurable, but there is no evidence available to support the technical",
+    "0.7": "Mira Verma's production effects are substantiated by measurable results, such as a 12% revenue-per-search improvement at Uber and a 6% retention boost at Flipkart, but there is no access",
+    "1.0": "Mira Verma's production effects have been measured through quantifiable results, such as a 12% increase in revenue per search at Uber and a 6% rise in retention at Flipkart, but there is a",
+    "1.3": "Mira Verma has documented her own measurable production impact through figures that show Uber generated 12% revenue per search while Flipkart had a 6% retention boost, but the lack of public papers, open-source contributions, or external"
+  },
+  "phrase_pt2": {
+    "input": "Mira Verma carries a sixty-day notice period that pushes the earliest possible start date two full months beyond the role's stated preference for a sub-thirty-day onboarding timeline, which introduces concrete scheduling friction for an immediate hiring need",
+    "0.01": "The role's preference for a sub-thirty-day onboarding timeline is overstated, as Mira Verma has a sixty-day notice period that puts two months between the start date and the start date",
+    "0.3": "The role's preference for a sub-thirty-day onboarding period is overstated by the sixty-day notice period with Mira Verma, which adds to the scheduling drag caused by an immediate need for",
+    "0.7": "Mira Verma's notice period is for sixty days, which means that the earliest possible start date is two months earlier than the role's preference for a sub-thirty-day onboarding time, adding to",
+    "1.0": "Mira Verma's notice period is set at sixty days, which means that the earliest possible start date is two months longer than the role's preference for a sub-thirty-day onboarding time, which",
+    "1.3": "The posting of Mira Verma comes with a sixty-day notice period, which means the earliest possible starting date is two months later than the role's advertised preference for a sub-thirty-day onboarding"
   }
 }

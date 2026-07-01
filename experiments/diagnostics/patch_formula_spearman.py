@@ -11,11 +11,11 @@ _DIAG_ROOT = Path(__file__).resolve().parent
 RESULTS_JSON = _DIAG_ROOT / "output" / "diagnostics_results.json"
 
 SPEARMAN_PAIRS: list[tuple[str, str, str]] = [
-    ("spearman(ce_norm, q1_norm)", "ce_norm", "q1_norm"),
-    ("spearman(ce_norm, fused_norm)", "ce_norm", "fused_norm"),
-    ("spearman(ce_norm, q2_norm)", "ce_norm", "q2_norm"),
-    ("spearman(ce_norm, skill_score)", "ce_norm", "skill_score"),
-    ("spearman(q1_norm, q2_norm)", "q1_norm", "q2_norm"),
+    ("spearman(cross_encoder_score, q1_score)", "cross_encoder_score", "q1_score"),
+    ("spearman(cross_encoder_score, fused_score)", "cross_encoder_score", "fused_score"),
+    ("spearman(cross_encoder_score, q2_score)", "cross_encoder_score", "q2_score"),
+    ("spearman(cross_encoder_score, skill_score)", "cross_encoder_score", "skill_score"),
+    ("spearman(q1_score, q2_score)", "q1_score", "q2_score"),
 ]
 
 

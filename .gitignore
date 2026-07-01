@@ -45,6 +45,9 @@ onnx/models/**
 models/cross_encoder/**
 !models/cross_encoder/
 !models/cross_encoder/.gitkeep
+models/paraphraser/**
+!models/paraphraser/
+!models/paraphraser/.gitkeep
 
 # Legacy scratch dirs under models/ (export script + requirements.txt stay tracked)
 models/encoder_test/
@@ -102,9 +105,7 @@ experiments/honeypot/output/**
 experiments/vectorSteering/testing/output/**
 !experiments/vectorSteering/testing/output/
 !experiments/vectorSteering/testing/output/.gitkeep
-experiments/vectorSteering/feasibility/phase_a_results.csv
-experiments/vectorSteering/feasibility/phase_b_results.csv
-experiments/vectorSteering/feasibility/summary.json
+experiments/vectorSteering/feasibility/results.json
 
 # K-means filter scratch (experimental Stage 1 alternative)
 data/filter_kmeans/

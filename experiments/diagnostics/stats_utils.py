@@ -79,7 +79,7 @@ def flag_variance_stats(
         flags.append("WIDE_RANGE")
 
     if (
-        signal_name == "availability_multiplier"
+        signal_name == "tier3_scaled"
         and p25 is not None
         and min_v is not None
         and p25 == min_v
@@ -138,9 +138,9 @@ def correlation_pair_flags(
     if abs_s > 0.70:
         flags.append("HIGHLY_CORRELATED")
     if signal_a != signal_b:
-        if signal_a == "ce_norm" and abs(spearman) > 0.70:
+        if signal_a == "cross_encoder_score" and abs(spearman) > 0.70:
             flags.append("REDUNDANT_WITH_CE")
-        elif signal_b == "ce_norm" and abs(spearman) > 0.70:
+        elif signal_b == "cross_encoder_score" and abs(spearman) > 0.70:
             flags.append("REDUNDANT_WITH_CE")
     if abs_s < 0.30:
         flags.append("GENUINELY_INDEPENDENT")

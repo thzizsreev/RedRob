@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "generated_at": "2026-07-01T12:19:27.780063+00:00",
+    "candidate_count": 5,
+    "model": "humarin/chatgpt_paraphraser_on_T5_base",
+    "pipeline_version": "v2_single_sentence",
+    "variation_mode": "temperature_sampling",
+    "temperatures": [
+      0.3,
+      0.7,
+      1.0,
+      1.3,
+      1.5
+    ],
+    "input_path": "C:\\Users\\msree\\OneDrive\\Desktop\\projects\\redrob\\experiments\\vectorSteering\\tech_reasoning_test\\input\\candidates.json",
+    "skeleton_validation": "PASS"
+  },
+  "candidates": [
+    {
+      "candidate_id": "CAND_0018549",
+      "tech_cat": "DEEP",
+      "cross_encoder_score": 3.8680710792541504,
+      "years_label": "6-plus-year",
+      "company_scope": "at Uber and Flipkart",
+      "system_type": "ranking pipeline",
+      "metric_1_raw": "improved revenue-per-search by 12%",
+      "metric_2_raw": "improved 7-day retention by 6%",
+      "metric_converted": "improving revenue-per-search by 12%",
+      "named_tech": "Qdrant",
+      "named_tech_pass": 2,
+      "verified_skill": "Elasticsearch",
+      "skill_evidence": "Elasticsearch",
+      "verb": "developed and scaled",
+      "verb_gerund": "developing and scaling",
+      "skeleton": "Mira Verma brings 6-plus-year years of production ML experience at Uber and Flipkart, most recently developing and scaling the ranking pipeline at Uber, improving revenue-per-search by 12%, with verified Elasticsearch depth directly relevant to the role's retrieval and ranking requirements",
+      "variations": [
+        {
+          "temperature": 0.3,
+          "text": "Mira Verma has accumulated 6+ years of experience in production management at Uber and Flipkart, most recently scaling the ranking pipeline and improving Uber's revenue-per-search by 12%. Her expertise in Elasticsearch is directly relevant to the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 0.7,
+          "text": "Mira Verma's extensive experience in production management and ranking pipelines, including over 6 years of work at Uber and Flipkart, has led her to create and scale the ranking pipeline at Uber, resulting in a 12% increase in revenue per search. Her expertise in Elasticsearch is directly relevant to the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.0,
+          "text": "Mira Verma, who has been working as a production ML executive at Uber and Flipkart for over 6 years, is most recently developing and scaling the ranking pipeline at the company, which has led to a 12% increase in revenue-per-search, with her expertise in Elasticsearch directly relating the position's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.3,
+          "text": "Mira Verma's 6-year track record in the supply chain through automation and software development, combined with her experience in Product & Programming at Flipkart, has been instrumental in the improvement of the Uber ranking pipeline by 12%, with expertise in Elasticsearch that is directly relevant to the job description's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.5,
+          "text": "Mira Verma, who spent more than six years as a production analyst at Amazon and Satoor before transitioning to VP of product strategy at Instasta, has recently increased the length of Uber's ranking pipeline by 12%, with Elasticsearch-tested depth directly linked to her target market."
+        }
+      ],
+      "selected": "Mira Verma, who spent more than six years as a production analyst at Amazon and Satoor before transitioning to VP of product strategy at Instasta, has recently increased the length of Uber's ranking pipeline by 12%, with Elasticsearch-tested depth directly linked to her target market.",
+      "selected_variation": "Mira Verma, who spent more than six years as a production analyst at Amazon and Satoor before transitioning to VP of product strategy at Instasta, has recently increased the length of Uber's ranking pipeline by 12%, with Elasticsearch-tested depth directly linked to her target market.",
+      "selected_temperature": 1.5,
+      "clause_tech": "Mira Verma, who spent more than six years as a production analyst at Amazon and Satoor before transitioning to VP of product strategy at Instasta, has recently increased the length of Uber's ranking pipeline by 12%, with Elasticsearch-tested depth directly linked to her target market."
+    },
+    {
+      "candidate_id": "CAND_0061265",
+      "tech_cat": "STRONG",
+      "cross_encoder_score": 2.794360876083374,
+      "years_label": "6-plus-year",
+      "company_scope": "across Zoho, Observe.AI, and Paytm",
+      "system_type": "semantic search system",
+      "metric_1_raw": "arch-relevance improvement of 35%",
+      "metric_2_raw": "improved revenue-per-search by 12%",
+      "metric_converted": "delivering a 35% arch-relevance improvement",
+      "named_tech": "Milvus",
+      "named_tech_pass": 2,
+      "verified_skill": "Qdrant",
+      "skill_evidence": "Qdrant",
+      "verb": "designed and deployed",
+      "verb_gerund": "designing and deploying",
+      "skeleton": "Tanya Chopra brings 6-plus-year years of production ML experience across Zoho, Observe.AI, and Paytm, most recently designing and deploying the semantic search system at Zoho, delivering a 35% arch-relevance improvement, with Qdrant experience aligning with the role's retrieval and ranking requirements",
+      "variations": [
+        {
+          "temperature": 0.3,
+          "text": "Tanya Chopra has 6+ years of experience in production ML at Zoho, Observe.AI, and Paytm, most recently being the one responsible for designing and rolling out the semantic search system at Zoho with a 35 per cent improvement in arch-relevance, while having 6 plus years of Qdrant experience satisfies the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 0.7,
+          "text": "Tanya Chopra's 6+ years of experience in production ML across Zoho, Observe.AI, and Paytm culminated her most recent project, which was the design and implementation of the semantic search system at Zoho, with a 35% improvement in arch-relevance, while her Qdrant experience aligned with the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.0,
+          "text": "Tanya Chopra has 6+ years of experience in production ML at Zoho, Observe.AI, and Paytm, most recently in designing and implementing the semantic search system for Zoho with a 35 per cent improvement (relative to Arch-Relevance), and Qdrant experience satisfies role retrieval and meets pay need as well."
+        },
+        {
+          "temperature": 1.3,
+          "text": "While Tanya Chopra has over 6 years of experience in production ML at Zoho, Observe.AI, and Paytm, she is the architect and most recent hire to lead a custom semantic search system at Zoho with 25% return on investment (previous job's focus was on relevancy evaluation), while experience with Qdrant experience also suits the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.5,
+          "text": "Having gained experience in production ML through Zoho, Observe.AI, and Paytm, Tanya Chopra has recently brought her expertise to the team by developing and eventually deploying the semantic search system at Zoho, resulting in a 35% improvement in efficiency. Additionally, her experience with Qdrant experience aligns well with the role's retrieval and ranking requirements, including coding proficiency of a data warehouse analysis/extension."
+        }
+      ],
+      "selected": "Tanya Chopra's 6+ years of experience in production ML across Zoho, Observe.AI, and Paytm culminated her most recent project, which was the design and implementation of the semantic search system at Zoho, with a 35% improvement in arch-relevance, while her Qdrant experience aligned with the role's retrieval and ranking requirements.",
+      "selected_variation": "Tanya Chopra's 6+ years of experience in production ML across Zoho, Observe.AI, and Paytm culminated her most recent project, which was the design and implementation of the semantic search system at Zoho, with a 35% improvement in arch-relevance, while her Qdrant experience aligned with the role's retrieval and ranking requirements.",
+      "selected_temperature": 0.7,
+      "clause_tech": "Tanya Chopra's 6+ years of experience in production ML across Zoho, Observe.AI, and Paytm culminated her most recent project, which was the design and implementation of the semantic search system at Zoho, with a 35% improvement in arch-relevance, while her Qdrant experience aligned with the role's retrieval and ranking requirements."
+    },
+    {
+      "candidate_id": "CAND_0086151",
+      "tech_cat": "MODERATE",
+      "cross_encoder_score": 2.047337293624878,
+      "years_label": "5-plus-year",
+      "company_scope": "across Wysa, Glance, and Meta",
+      "system_type": "ranking pipeline",
+      "metric_1_raw": "improved revenue-per-search by 12%",
+      "metric_2_raw": "improved 7-day retention by 6%",
+      "metric_converted": "a 12% revenue-per-search improvement",
+      "named_tech": "Elasticsearch",
+      "named_tech_pass": 1,
+      "verified_skill": "Qdrant",
+      "skill_evidence": "Elasticsearch",
+      "verb": "constructed and maintained",
+      "verb_gerund": "constructing and maintaining",
+      "skeleton": "Ayaan Tiwari brings 5-plus-year years of ML experience across Wysa, Glance, and Meta, currently working on the ranking pipeline at Wysa, with a 12% revenue-per-search improvement achieved, with Elasticsearch exposure showing partial alignment to the role's retrieval and ranking focus",
+      "variations": [
+        {
+          "temperature": 0.3,
+          "text": "Ayaan Tiwari, who has a combined 5+ years of ML experience at Wysa, Glance, and Meta, is currently working on improving the ranking pipeline. He has achieved a 12% increase in revenue per search, while Elasticsearch exposure has only partially aligned with the role's focus on retrieval and ranking."
+        },
+        {
+          "temperature": 0.7,
+          "text": "Ayaan Tiwari, who has a combined 5+ years of ML experience at Wysa, Glance, and Meta, is currently responsible for developing the ranking pipeline at Wysa, with an additional 12% in revenue per search. Elasticsearch exposure is partially consistent with the role's retrieval and ranking focus."
+        },
+        {
+          "temperature": 1.0,
+          "text": "With over 5 years of ML experience at Wysa, Glance, and Meta, Ayaan Tiwari is currently working on improving the ranking pipeline and has seen an increase in revenue per search by 12%, with Elasticsearch exposure partially aligning with the role's retrieval and ranking focus."
+        },
+        {
+          "temperature": 1.3,
+          "text": "With over 5 years of experience in ML at Wysa, Glance, and Meta, Ayaan Tiwari is currently instrumental in developing the ranking pipeline for Wysa. He has experienced an additional 12% revenue growth per search, while Elasticsearch exposure aligns with the role's retrieval and ranking focus to a high degree of partiality."
+        },
+        {
+          "temperature": 1.5,
+          "text": "Ayaan Tiwari is working on the ranking pipeline at Wysa while also benefiting from over 5 years of ML experience at Glance and Meta, with some influence due to their participation in Elasticsearch."
+        }
+      ],
+      "selected": "Ayaan Tiwari, who has a combined 5+ years of ML experience at Wysa, Glance, and Meta, is currently responsible for developing the ranking pipeline at Wysa, with an additional 12% in revenue per search. Elasticsearch exposure is partially consistent with the role's retrieval and ranking focus.",
+      "selected_variation": "Ayaan Tiwari, who has a combined 5+ years of ML experience at Wysa, Glance, and Meta, is currently responsible for developing the ranking pipeline at Wysa, with an additional 12% in revenue per search. Elasticsearch exposure is partially consistent with the role's retrieval and ranking focus.",
+      "selected_temperature": 0.7,
+      "clause_tech": "Ayaan Tiwari, who has a combined 5+ years of ML experience at Wysa, Glance, and Meta, is currently responsible for developing the ranking pipeline at Wysa, with an additional 12% in revenue per search. Elasticsearch exposure is partially consistent with the role's retrieval and ranking focus."
+    },
+    {
+      "candidate_id": "CAND_0018722",
+      "tech_cat": "SURFACE",
+      "cross_encoder_score": 0.8690608739852905,
+      "years_label": "",
+      "company_scope": "Saarthi.ai, Unacademy, and Swiggy",
+      "system_type": "semantic search system",
+      "metric_1_raw": "arch-relevance improvement of 35%",
+      "metric_2_raw": "improved revenue-per-search by 12%",
+      "metric_converted": null,
+      "named_tech": "Weaviate",
+      "named_tech_pass": 2,
+      "verified_skill": null,
+      "skill_evidence": "Weaviate",
+      "verb": "constructed and maintained",
+      "verb_gerund": "constructing and maintaining",
+      "skeleton": "Pranav Trivedi's profile, spanning Saarthi.ai, Unacademy, and Swiggy, shows keyword-level alignment to retrieval systems including Weaviate exposure, but limited semantic depth against the role's ranking and embedding requirements",
+      "variations": [
+        {
+          "temperature": 0.3,
+          "text": "Pranav Trivedi's profile, which includes Saarthi.ai, Unacademy, and Swiggy, exhibits keyword-level alignment to retrieval systems such as Weaviate exposure, but has limited semantic depth in relation to the role's ranking and embedding requirements."
+        },
+        {
+          "temperature": 0.7,
+          "text": "Pranav Trivedi's profile, which includes Saarthi.ai, Unacademy, and Swiggy, exhibits keyword-level alignment to retrieval systems such as Weaviate exposure, but has limited semantic depth in relation to the role's ranking and embedding requirements."
+        },
+        {
+          "temperature": 1.0,
+          "text": "Pranav Trivedi's profile, which includes Saarthi.ai, Unacademy, and Swiggy, displays keyword-level alignment to retrieval systems such as Weaviate exposure, but has limited semantic depth in relation to the role's ranking and embedding requirements."
+        },
+        {
+          "temperature": 1.3,
+          "text": "However, Pranav Trivedi's profile (encompassing Saarthi.ai, Unacademy and Swiggy) exhibits keyword-level alignment to retrieval systems such as Weaviate exposure but has very little semantic depth with respect to the role's ranking and embedding requirements."
+        },
+        {
+          "temperature": 1.5,
+          "text": "Such: Pranav Trivedi across various Web resources -- from Saarthi.ai (later published in Cyber Projects, 2015) -- Unacademy and Wiki content - Weaviate Exposure -- And this type of profile has relatively high semantic depth with regard to the keyword-level alignment for retrieval systems including Weaviate exposure (the Javaeta Foundation's website) and the necessary embedding requirements which are associated with the role, which reflects the minimum required from programming languages."
+        }
+      ],
+      "selected": "However, Pranav Trivedi's profile (encompassing Saarthi.ai, Unacademy and Swiggy) exhibits keyword-level alignment to retrieval systems such as Weaviate exposure but has very little semantic depth with respect to the role's ranking and embedding requirements.",
+      "selected_variation": "However, Pranav Trivedi's profile (encompassing Saarthi.ai, Unacademy and Swiggy) exhibits keyword-level alignment to retrieval systems such as Weaviate exposure but has very little semantic depth with respect to the role's ranking and embedding requirements.",
+      "selected_temperature": 1.3,
+      "clause_tech": "However, Pranav Trivedi's profile (encompassing Saarthi.ai, Unacademy and Swiggy) exhibits keyword-level alignment to retrieval systems such as Weaviate exposure but has very little semantic depth with respect to the role's ranking and embedding requirements."
+    },
+    {
+      "candidate_id": "CAND_0051630",
+      "tech_cat": "DEEP",
+      "cross_encoder_score": 3.5008435249328613,
+      "years_label": "5-plus-year",
+      "company_scope": "at Razorpay and InMobi",
+      "system_type": "ranking pipeline",
+      "metric_1_raw": "improved revenue-per-search by 12%",
+      "metric_2_raw": "arch-relevance improvement of 35%",
+      "metric_converted": "improving revenue-per-search by 12%",
+      "named_tech": "Elasticsearch",
+      "named_tech_pass": 1,
+      "verified_skill": null,
+      "skill_evidence": "Elasticsearch",
+      "verb": "architected and shipped",
+      "verb_gerund": "architecting and shipping",
+      "skeleton": "Kavya Naidu brings 5-plus-year years of production ML experience at Razorpay and InMobi, most recently architecting and shipping the ranking pipeline at Razorpay, improving revenue-per-search by 12%, with Elasticsearch depth directly relevant to the role's retrieval and ranking requirements",
+      "variations": [
+        {
+          "temperature": 0.3,
+          "text": "Kavya Naidu, who has over 5 years of experience in production ML at Razorpay and InMobi, has recently been instrumental in building the ranking pipeline for Razorpay, which has led to a 12% increase in revenue per search, with his expertise in Elasticsearch being directly relevant to the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 0.7,
+          "text": "Kavya Naidu, who has over 5 years of experience in production management at Razorpay and InMobi, has recently built and shipped the ranking pipeline for the position, resulting in a 12% increase in revenue per search. The relevance of Elasticsearch to the job's retrieval and ranking requirements is evident."
+        },
+        {
+          "temperature": 1.0,
+          "text": "Kavya Naidu, a 25-year experienced developer, brings over 5 years of experience in product management at Razorpay and InMobi. He was most recently responsible for developing and shipping the ranking pipeline that helped improve revenue per search by 12%, with his knowledge of Elasticsearch directly tied to the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.3,
+          "text": "By adding more than five years of production ML experience at Razorpay and InMobi, Kavya Naidu has accomplished significant feats in establishing the ranking pipeline and enhancing revenue-per-search by 12%, with his expertise in Elasticsearch being directly linked to the role's retrieval and ranking requirements."
+        },
+        {
+          "temperature": 1.5,
+          "text": "With more than five years of experience in production analytics at Razorpay and InMobi, Kavya Naidu has recently become HeadDesk's final product. He has been instrumental in the development of the ranking pipeline for Razorpay, improving revenue per search by 12% while adapting Elasticsearch's targeting to the role's retrieval and ranking requirements."
+        }
+      ],
+      "selected": "By adding more than five years of production ML experience at Razorpay and InMobi, Kavya Naidu has accomplished significant feats in establishing the ranking pipeline and enhancing revenue-per-search by 12%, with his expertise in Elasticsearch being directly linked to the role's retrieval and ranking requirements.",
+      "selected_variation": "By adding more than five years of production ML experience at Razorpay and InMobi, Kavya Naidu has accomplished significant feats in establishing the ranking pipeline and enhancing revenue-per-search by 12%, with his expertise in Elasticsearch being directly linked to the role's retrieval and ranking requirements.",
+      "selected_temperature": 1.3,
+      "clause_tech": "By adding more than five years of production ML experience at Razorpay and InMobi, Kavya Naidu has accomplished significant feats in establishing the ranking pipeline and enhancing revenue-per-search by 12%, with his expertise in Elasticsearch being directly linked to the role's retrieval and ranking requirements."
+    }
+  ]
+}

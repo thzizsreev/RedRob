@@ -123,8 +123,8 @@ def _build_summary_narrative(
         )
 
     availability_text = (
-        "Wrong flips occur when a technically stronger candidate (higher bonused) ranks below "
-        "a weaker one after availability is applied. Large-gap flips and top-100 displacement "
+        "Wrong flips occur when a technically stronger candidate (higher score_after_t2) ranks below "
+        "a weaker one after tier3 availability is applied. Large-gap flips and top-100 displacement "
         "quantify submission-quality cost."
     )
 
@@ -218,7 +218,7 @@ def build_diagnostics_json(
                 "transitions": df_to_records(exp3),
             },
             "exp4_availability_flips": {
-                "description": "Pairs where availability reverses technical (bonused) ordering.",
+                "description": "Pairs where tier3 availability reverses pre-availability ordering.",
                 "summary": exp4["summary_dict"],
                 "large_gap_flip_details": df_to_records(exp4["detail"]),
             },

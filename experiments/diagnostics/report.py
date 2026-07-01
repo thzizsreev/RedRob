@@ -127,12 +127,12 @@ def write_report(
             "",
             f"- Total wrong flips: {summary.get('wrong_flip_count', '—')} "
             f"({summary.get('wrong_flip_percentage', '—')}%)",
-            f"- Large-gap wrong flips (>0.15 bonused diff): {summary.get('large_gap_flips', '—')}",
-            f"- Top-100 candidates displaced by availability: {summary.get('top100_candidates_displaced', '—')}",
-            f"- Top-100 candidates rescued by availability: {summary.get('top100_candidates_rescued', '—')}",
+            f"- Large-gap wrong flips (>0.15 pre-avail diff): {summary.get('large_gap_flips', '—')}",
+            f"- Top-100 candidates displaced by availability tier: {summary.get('top100_candidates_displaced', '—')}",
+            f"- Top-100 candidates rescued by availability tier: {summary.get('top100_candidates_rescued', '—')}",
             "",
-            "Wrong flips occur when a technically stronger candidate (higher bonused) is ranked below "
-            "a weaker one after the availability multiplier is applied. Large-gap flips are the most "
+            "Wrong flips occur when a technically stronger candidate (higher score_after_t2) is ranked below "
+            "a weaker one after tier3 (availability) is applied. Large-gap flips are the most "
             "damaging cases; displaced top-100 counts quantify submission-quality cost.",
             "",
             "## Section 5 — Boolean Signal Coverage",
@@ -201,31 +201,37 @@ def write_report(
         ]
     )
 
-    am = scored_df["availability_multiplier"].cast(pl.Float64)
-    at_floor_pct = float((am == 0.5).sum()) / scored_df.height * 100 if scored_df.height else 0
+    avail_unit = scored_df["avail_unit"].cast(pl.Int64)
+    tier_c_pct = float((avail_unit == -1).sum()) / scored_df.height * 100 if scored_df.height else 0
 
     section7 = {
-        "std(ce_norm)": _get_std(exp1, "ce_norm"),
-        "std(q1_norm)": _get_std(exp1, "q1_norm"),
-        "std(q2_norm)": _get_std(exp1, "q2_norm"),
-        "std(fused_norm)": _get_std(exp1, "fused_norm"),
+        "std(borda_primary)": _get_std(exp1, "borda_primary"),
+        "std(tier2_scaled)": _get_std(exp1, "tier2_scaled"),
+        "std(tier3_scaled)": _get_std(exp1, "tier3_scaled"),
+        "std(tier4_scaled)": _get_std(exp1, "tier4_scaled"),
         "std(skill_score)": _get_std(exp1, "skill_score"),
-        "spearman(ce_norm, q1_norm)": _get_spearman(scored_df, "ce_norm", "q1_norm"),
-        "spearman(ce_norm, fused_norm)": _get_spearman(scored_df, "ce_norm", "fused_norm"),
-        "spearman(ce_norm, q2_norm)": _get_spearman(scored_df, "ce_norm", "q2_norm"),
-        "spearman(ce_norm, skill_score)": _get_spearman(scored_df, "ce_norm", "skill_score"),
-        "spearman(q1_norm, q2_norm)": _get_spearman(scored_df, "q1_norm", "q2_norm"),
-        "layer_spearman L1->L2": _layer_spearman(exp3, "L1→L2"),
-        "layer_spearman L2->L3": _layer_spearman(exp3, "L2→L3"),
-        "layer_spearman L3->L4": _layer_spearman(exp3, "L3→L4"),
-        "layer_spearman L4->L5": _layer_spearman(exp3, "L4→L5"),
-        "layer_spearman L5->L6": _layer_spearman(exp3, "L5→L6"),
-        "layer_spearman L6->L7": _layer_spearman(exp3, "L6→L7"),
+        "spearman(cross_encoder_score, q1_score)": _get_spearman(
+            scored_df, "cross_encoder_score", "q1_score"
+        ),
+        "spearman(cross_encoder_score, fused_score)": _get_spearman(
+            scored_df, "cross_encoder_score", "fused_score"
+        ),
+        "spearman(cross_encoder_score, q2_score)": _get_spearman(
+            scored_df, "cross_encoder_score", "q2_score"
+        ),
+        "spearman(cross_encoder_score, skill_score)": _get_spearman(
+            scored_df, "cross_encoder_score", "skill_score"
+        ),
+        "spearman(q1_score, q2_score)": _get_spearman(scored_df, "q1_score", "q2_score"),
+        "layer_spearman T0->T1": _layer_spearman(exp3, "T0→T1"),
+        "layer_spearman T1->T2": _layer_spearman(exp3, "T1→T2"),
+        "layer_spearman T2->T3": _layer_spearman(exp3, "T2→T3"),
+        "layer_spearman T3->T4": _layer_spearman(exp3, "T3→T4"),
         "wrong_flip_count": str(summary.get("wrong_flip_count", "—")),
         "wrong_flip_large_gap_count": str(summary.get("large_gap_flips", "—")),
         "top100_candidates_displaced": str(summary.get("top100_candidates_displaced", "—")),
-        "availability_multiplier std": _get_std(exp1, "availability_multiplier"),
-        "availability_multiplier pct_at_floor": f"{at_floor_pct:.2f}%",
+        "tier3_scaled std": _get_std(exp1, "tier3_scaled"),
+        "avail_unit pct_tier_c": f"{tier_c_pct:.2f}%",
         "count in_sweet_spot == True": str(
             int(scored_df["in_sweet_spot"].cast(pl.Boolean, strict=False).sum())
         ),

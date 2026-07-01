@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import polars as pl
-
-from stats_utils import to_float_array
 
 
 def _append_bool(rows: list[dict], df: pl.DataFrame, col: str, n: int) -> None:
@@ -95,6 +92,9 @@ def run_exp5(df: pl.DataFrame, output_dir: Path) -> pl.DataFrame:
     for value in ["preferred", "acceptable", "outside_india", "unknown"]:
         _append_categorical(rows, df, "location_tier", value, n)
 
+    for value in ["A", "B", "C"]:
+        _append_categorical(rows, df, "avail_tier", value, n)
+
     _append_threshold(
         rows,
         df,
@@ -114,25 +114,9 @@ def run_exp5(df: pl.DataFrame, output_dir: Path) -> pl.DataFrame:
     _append_threshold(
         rows,
         df,
-        "consulting_resid_penalty",
-        "> 0",
-        df["consulting_resid_penalty"].cast(pl.Float64) > 0,
-        n,
-    )
-    _append_threshold(
-        rows,
-        df,
         "ambiguity_penalty",
         "> 0",
         df["ambiguity_penalty"].cast(pl.Float64) > 0,
-        n,
-    )
-    _append_threshold(
-        rows,
-        df,
-        "q3_residual_penalty",
-        "> 0.05",
-        df["q3_residual_penalty"].cast(pl.Float64) > 0.05,
         n,
     )
     _append_threshold(
@@ -154,41 +138,34 @@ def run_exp5(df: pl.DataFrame, output_dir: Path) -> pl.DataFrame:
     _append_threshold(
         rows,
         df,
-        "optional_bonus",
-        ">= 0.08",
-        df["optional_bonus"].cast(pl.Float64) >= 0.08,
+        "sweet_bonus",
+        "> 0",
+        df["sweet_bonus"].cast(pl.Float64) > 0,
+        n,
+    )
+    _append_threshold(
+        rows,
+        df,
+        "tier2_scaled",
+        "< 0",
+        df["tier2_scaled"].cast(pl.Float64) < 0,
         n,
     )
 
-    penalty_vals = to_float_array(df["total_penalty"])
-    if penalty_vals.size:
-        p50, p75, p95 = np.percentile(penalty_vals, [50, 75, 95])
-        rows.append(
-            {
-                "signal_name": "total_penalty",
-                "condition": "distribution",
-                "count_triggered": int(penalty_vals.size),
-                "pct_triggered": round(float(np.mean(penalty_vals)), 4),
-                "flags": f"std={float(np.std(penalty_vals)):.4f};p50={p50:.4f};p75={p75:.4f};p95={p95:.4f};max={float(np.max(penalty_vals)):.4f}",
-            }
-        )
-
-    am = df["availability_multiplier"].cast(pl.Float64)
-    at_floor = int((am == 0.5).sum())
-    above_09 = int((am > 0.9).sum())
-    between_05_07 = int(((am > 0.5) & (am <= 0.7)).sum())
-    between_07_09 = int(((am > 0.7) & (am <= 0.9)).sum())
+    avail_unit = df["avail_unit"].cast(pl.Int64)
+    tier_c = int((avail_unit == -1).sum())
+    tier_b = int((avail_unit == 0).sum())
+    tier_a = int((avail_unit == 1).sum())
 
     for condition, count in [
-        ("== 0.5 (floor)", at_floor),
-        ("> 0.9", above_09),
-        ("between 0.5 and 0.7", between_05_07),
-        ("between 0.7 and 0.9", between_07_09),
+        ("== -1 (tier C)", tier_c),
+        ("== 0 (tier B)", tier_b),
+        ("== 1 (tier A)", tier_a),
     ]:
         pct = count / n * 100 if n else 0.0
         rows.append(
             {
-                "signal_name": "availability_multiplier",
+                "signal_name": "avail_unit",
                 "condition": condition,
                 "count_triggered": count,
                 "pct_triggered": round(pct, 4),
@@ -196,16 +173,23 @@ def run_exp5(df: pl.DataFrame, output_dir: Path) -> pl.DataFrame:
             }
         )
 
-    consulting_pen = int((df["consulting_resid_penalty"].cast(pl.Float64) > 0).sum())
-    consulting_heavy = int((df["career_type"].cast(pl.Utf8) == "consulting_heavy").sum())
-    if consulting_pen > 0.5 * n and consulting_heavy < 0.1 * n:
+    tier3 = df["tier3_scaled"].cast(pl.Float64)
+    tier3_negative = int((tier3 < 0).sum())
+    tier3_zero = int((tier3 == 0).sum())
+    tier3_positive = int((tier3 > 0).sum())
+    for condition, count in [
+        ("< 0", tier3_negative),
+        ("== 0", tier3_zero),
+        ("> 0", tier3_positive),
+    ]:
+        pct = count / n * 100 if n else 0.0
         rows.append(
             {
-                "signal_name": "consulting_resid_penalty vs career_type",
-                "condition": "PENALTY_MISMATCH",
-                "count_triggered": consulting_pen,
-                "pct_triggered": round(consulting_heavy / n * 100, 4) if n else 0.0,
-                "flags": "PENALTY_MISMATCH",
+                "signal_name": "tier3_scaled",
+                "condition": condition,
+                "count_triggered": count,
+                "pct_triggered": round(pct, 4),
+                "flags": "",
             }
         )
 

@@ -1,7 +1,0 @@
-# Install CPU torch first (see README):
-#   pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
-sentence-transformers>=2.2,<4
-vec2text==0.0.13
-transformers>=4.36,<5
-pyyaml
-numpy<2

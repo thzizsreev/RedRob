@@ -1,7 +1,5 @@
-# Install CPU torch first into existing env/:
-#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# pip install -r experiments/vectorSteering/feasibility/requirements.txt
 sentence-transformers>=2.2,<4
 vec2text==0.0.13
 transformers>=4.36,<5
-pyyaml
 numpy>=2.1.0

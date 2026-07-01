@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Orchestrator: Phase A -> gate -> Phase B -> summary.
+"""Single-pass encode → decode round trip.
 
-Edit paths and run settings below, then:
   env\\Scripts\\python.exe experiments\\vectorSteering\\feasibility\\run_test.py
 """
 
@@ -9,136 +8,62 @@ from __future__ import annotations
 
 import json
 import sys
-import traceback
 from pathlib import Path
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 if str(PACKAGE_DIR) not in sys.path:
     sys.path.insert(0, str(PACKAGE_DIR))
 
 # --- paths (edit here) ---
-INPUT_CONFIG = PACKAGE_DIR / "config.yaml"
-OUTPUT_DIR = PACKAGE_DIR
+INPUT_FILE = PACKAGE_DIR / "input.txt"
+OUTPUT_FILE = PACKAGE_DIR / "results.json"
 
-# --- run settings (edit here) ---
-RUN_PHASE = "all"  # "a", "b", or "all"
-FORCE_PHASE_B = False
-
-PHASE_A_CSV = "phase_a_results.csv"
-PHASE_B_CSV = "phase_b_results.csv"
-SUMMARY_JSON = "summary.json"
+# --- model settings (edit here) ---
+ENCODER_MODEL = "sentence-transformers/gtr-t5-base"
+DECODER_EMBEDDER_ID = "gtr-base"
 
 
-def _write_error_summary(output_dir: Path, error_message: str) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    summary_path = output_dir / SUMMARY_JSON
-    payload = {
-        "phase_a_ran": False,
-        "phase_b_ran": False,
-        "phase_b_skipped_reason": None,
-        "error": error_message,
-        "overall_automated_pass": False,
-    }
-    with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-    return summary_path
+def read_input_texts(path: Path) -> list[str]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    return [line.strip() for line in lines if line.strip()]
 
 
 def main() -> int:
-    print(f"Input config: {INPUT_CONFIG}")
-    print(f"Output dir:   {OUTPUT_DIR}")
-    print(f"Run phase:    {RUN_PHASE}")
-    print(flush=True)
+    from decode import decode_vector
+    from encode import encode_text
 
-    if not INPUT_CONFIG.is_file():
-        print(f"ERROR: config not found: {INPUT_CONFIG}")
-        summary_path = _write_error_summary(OUTPUT_DIR, f"config not found: {INPUT_CONFIG}")
-        print(f"Wrote error summary -> {summary_path}")
+    if not INPUT_FILE.is_file():
+        print(f"ERROR: input file not found: {INPUT_FILE}")
         return 1
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    texts = read_input_texts(INPUT_FILE)
+    if not texts:
+        print(f"ERROR: no text in {INPUT_FILE}")
+        return 1
 
-    from acceptance import build_summary, print_review_checklist  # noqa: WPS433
-    from report import write_summary_json  # noqa: WPS433
-    from run_phase_a import run_phase_a  # noqa: WPS433
-    from run_phase_b import phase_a_passed, run_phase_b  # noqa: WPS433
+    print(f"Input:  {INPUT_FILE}")
+    print(f"Output: {OUTPUT_FILE}")
+    print(f"Encoder: {ENCODER_MODEL}")
+    print(f"Decoder: vec2text {DECODER_EMBEDDER_ID} (1 pass)\n")
 
-    phase_a_rows = None
-    phase_b_rows = None
-    phase_a_ran = False
-    phase_b_ran = False
-    phase_b_skipped_reason = None
-    error_message = None
+    results = []
+    for i, text in enumerate(texts, start=1):
+        print(f"[{i}/{len(texts)}] INPUT: {text!r}")
+        vector = encode_text(ENCODER_MODEL, text)
+        print(f"         vector shape: {vector.shape}")
+        decoded = decode_vector(vector, embedder_id=DECODER_EMBEDDER_ID)
+        print(f"         DECODED: {decoded!r}\n")
+        results.append({"input": text, "decoded": decoded, "vector_dim": int(vector.shape[0])})
 
-    try:
-        if RUN_PHASE in ("a", "all"):
-            print("=== Phase A: Baseline inversion stability ===\n", flush=True)
-            phase_a_rows = run_phase_a(INPUT_CONFIG, OUTPUT_DIR, PHASE_A_CSV)
-            phase_a_ran = True
-
-        if RUN_PHASE in ("b", "all"):
-            if RUN_PHASE == "b" or FORCE_PHASE_B:
-                gate_ok = True
-                skip_reason = None
-            else:
-                gate_ok, skip_reason = phase_a_passed(OUTPUT_DIR, PHASE_A_CSV)
-
-            if gate_ok or FORCE_PHASE_B:
-                if not gate_ok:
-                    print(
-                        f"Warning: Phase A gate failed ({skip_reason}); "
-                        "running Phase B anyway (FORCE_PHASE_B=True).",
-                        flush=True,
-                    )
-                print("\n=== Phase B: Steering direction sanity check ===\n", flush=True)
-                phase_b_rows = run_phase_b(INPUT_CONFIG, OUTPUT_DIR, PHASE_B_CSV)
-                phase_b_ran = True
-            else:
-                phase_b_skipped_reason = skip_reason
-                print(f"\nPhase B skipped: {skip_reason}", flush=True)
-                print("Set FORCE_PHASE_B = True in run_test.py to override.", flush=True)
-
-    except Exception as exc:
-        error_message = str(exc)
-        print(f"\nERROR during test run: {exc}", flush=True)
-        traceback.print_exc()
-
-    summary = build_summary(
-        phase_a_rows=phase_a_rows,
-        phase_b_rows=phase_b_rows,
-        phase_a_ran=phase_a_ran,
-        phase_b_ran=phase_b_ran,
-        phase_b_skipped_reason=phase_b_skipped_reason,
+    OUTPUT_FILE.write_text(
+        json.dumps(results, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
     )
-    if error_message:
-        summary["error"] = error_message
-
-    summary_path = OUTPUT_DIR / SUMMARY_JSON
-    write_summary_json(summary_path, summary)
-
-    print(f"\nWrote summary -> {summary_path}", flush=True)
-    if phase_a_ran:
-        print(f"  Phase A CSV -> {OUTPUT_DIR / PHASE_A_CSV}", flush=True)
-    if phase_b_ran:
-        print(f"  Phase B CSV -> {OUTPUT_DIR / PHASE_B_CSV}", flush=True)
-
-    if error_message:
-        return 1
-
-    print(f"Overall automated pass: {'YES' if summary['overall_automated_pass'] else 'NO'}", flush=True)
-
-    if phase_a_ran and summary.get("automated", {}).get("phase_a"):
-        det = summary["automated"]["phase_a"]["determinism"]
-        print(f"  Phase A determinism: {det['detail']}", flush=True)
-
-    if phase_b_ran and summary.get("automated", {}).get("phase_b"):
-        det = summary["automated"]["phase_b"]["determinism"]
-        print(f"  Phase B determinism: {det['detail']}", flush=True)
-
-    print_review_checklist()
-
-    return 0 if summary["overall_automated_pass"] else 1
+    print(f"Saved -> {OUTPUT_FILE}")
+    return 0
 
 
 if __name__ == "__main__":

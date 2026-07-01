@@ -8,16 +8,20 @@ import sys
 from datetime import date
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 _DIAG_ROOT = Path(__file__).resolve().parent
 
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 if str(_DIAG_ROOT) not in sys.path:
     sys.path.insert(0, str(_DIAG_ROOT))
 
 import polars as pl
 
+from tracks.shared.paths import CANDIDATES_JSONL_PATH, RUNTIME_STAGE5_DIR
+
 from avail_factors import AvailConfig
-from columns import validate_columns
+from columns import enrich_scored_df, validate_columns
 from exp1_signal_variance import run_exp1
 from exp2_correlation import run_exp2
 from exp3_layer_rank_stability import run_exp3
@@ -28,8 +32,8 @@ from json_output import build_diagnostics_json, write_json_outputs
 from report import print_stdout_summary, write_report
 
 # --- Input / output paths (edit here) ---
-SCORED_PARQUET = _REPO_ROOT / "artifacts/runtime/stage5/stage5_scored.parquet"
-CANDIDATES_JSONL = _REPO_ROOT / "data/candidates.jsonl"
+SCORED_PARQUET = RUNTIME_STAGE5_DIR / "stage5_scored.parquet"
+CANDIDATES_JSONL = CANDIDATES_JSONL_PATH
 OUTPUT_DIR = _DIAG_ROOT / "output"
 
 # Exp6 must match Stage 5 scoring date (config.yaml stage5.current_date)
@@ -93,6 +97,7 @@ def main() -> None:
     print(f"Loaded {df.height:,} candidates")
 
     validate_columns(df)
+    df = enrich_scored_df(df)
 
     print("Running Experiment 1 — signal variance")
     exp1 = run_exp1(df, output_dir)

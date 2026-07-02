@@ -409,7 +409,7 @@ stage4:
   candidates_jsonl_path: data/candidates.jsonl
 
 stage5:
-  team_id: "team_xxx"
+  team_id: "SignalHunters"
   top_n: 100
   current_date: "auto"
   stage4_input_path: artifacts/runtime/stage4/stage4_reranked.parquet
@@ -497,7 +497,7 @@ stage5:
     notice_long_min_days: 90
 
 stage6:
-  team_id: "team_xxx"
+  team_id: "SignalHunters"
   top_n: 100
   stage5_top100_path: artifacts/runtime/stage5/stage5_scored_top100.parquet
   candidates_jsonl_path: data/candidates.jsonl

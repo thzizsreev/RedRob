@@ -5,7 +5,7 @@ Build pretty JSON + interactive HTML from Stage 5 team submission CSV.
     python tools/build_team_view.py
     python tools/build_team_view.py --out outputs/team_views/my_run
 
-Joins team_xxx.csv with full candidates.jsonl profiles and optional Stage 5
+Joins SignalHunters.csv with full candidates.jsonl profiles and optional Stage 5
 scored parquet for pipeline metadata.
 
 Default output: outputs/team_views/default/ in the redrob repo root.
@@ -32,10 +32,11 @@ from tracks.shared.paths import (
     CANDIDATES_JSONL_PATH,
     ROOT_DIR,
     RUNTIME_STAGE5_DIR,
+    TEAM_ID,
     TEAM_VIEWS_DIR,
 )
 
-DEFAULT_CSV = RUNTIME_STAGE5_DIR / "team_xxx.csv"
+DEFAULT_CSV = RUNTIME_STAGE5_DIR / f"{TEAM_ID}.csv"
 DEFAULT_STAGE5_PARQUET = RUNTIME_STAGE5_DIR / "stage5_scored_top100.parquet"
 DEFAULT_OUT_DIR = TEAM_VIEWS_DIR / "Stage5ImpactCalibrated"
 

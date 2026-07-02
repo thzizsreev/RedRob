@@ -166,4 +166,4 @@ No `stage1:` YAML block. Key constants in `core/config.py`:
 
 - **Typical survivors:** ~6,000–8,000 (depends on cluster sizes).
 - **Failure mode:** If all clusters tiny, noise fallback inflates set.
-- **Alternative:** [`docs/kmeans_clustering_implementation_guide.md`](../docs/kmeans_clustering_implementation_guide.md) documents K-means if HDBSCAN overshoots.
+- **Alternative:** [`docs/plans/kmeans_clustering_implementation_guide.md`](../docs/plans/kmeans_clustering_implementation_guide.md) documents K-means if HDBSCAN overshoots.

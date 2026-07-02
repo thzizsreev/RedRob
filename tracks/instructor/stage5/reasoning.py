@@ -8,27 +8,49 @@ _ABSOLUTE_FALLBACK = (
 )
 
 
+def _title_snippet(row: dict) -> str:
+    summary = str(row.get("technical_summary_sentence") or "").strip()
+    if summary:
+        return summary.split("|", 1)[0].strip()
+    title = str(row.get("title_family") or "").replace("_", " ")
+    if title:
+        return title.title()
+    return "this profile"
+
+
 def _clause1(row: dict) -> str:
+    title = _title_snippet(row)
+    years = row.get("total_years_exp")
+    years_bit = f"{int(float(years))}y experience" if years is not None else "experience on file"
+
     borda = row.get("borda_primary")
     if borda is not None and float(borda) >= 0.75:
+        ce = row.get("cross_encoder_score")
+        ce_bit = f"; cross-encoder {float(ce):.2f}" if ce is not None else ""
         return (
-            "Strong technical fit across retrieval, career depth, and JD alignment signals."
+            f"Top-tier match for Senior AI Engineer: {title} with {years_bit} "
+            f"and strong retrieval/JD alignment (borda {float(borda):.2f}{ce_bit})."
         )
 
     if row.get("in_sweet_spot") is True and float(row.get("tier2_scaled") or 0) > 0:
-        years = row.get("total_years_exp")
-        if years is not None:
-            return (
-                f"Within the 6–8 year target range with product-company background. "
-                f"{int(float(years))}y total experience."
-            )
-        return "Within the 6–8 year target range with product-company background."
+        return (
+            f"Within JD 6–8 year sweet spot: {title} with {years_bit} "
+            "and product-company career shape."
+        )
 
     ce = row.get("cross_encoder_score")
     if ce is not None and float(ce) >= 0.80:
-        return "Closely matches role requirements on full-profile semantic evaluation."
+        return (
+            f"Strong semantic fit on full profile: {title} with {years_bit} "
+            f"(cross-encoder {float(ce):.2f})."
+        )
 
-    return "Moderate technical signal across retrieval and career history dimensions."
+    fused = row.get("fused_score")
+    fused_bit = f", fused retrieval {float(fused):.3f}" if fused is not None else ""
+    return (
+        f"Moderate fit for retrieval-heavy AI engineer role: {title} with {years_bit}"
+        f"{fused_bit}."
+    )
 
 
 def _clause2(row: dict) -> str:

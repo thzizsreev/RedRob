@@ -2,7 +2,7 @@
 
 This handbook documents the **INSTRUCTOR Track A** candidate-ranking pipeline: a multi-stage funnel that reduces ~100,000 profiles to a validated top-100 CSV with three-sentence recruiter reasoning per candidate.
 
-For planning artifacts and historical design notes, see [`docs/`](../docs/). This `guide/` folder is the **consolidated operator + deep-dive reference**, with implementation truth taken from code under [`tracks/instructor/`](../tracks/instructor/).
+For planning artifacts and historical design notes, see [`docs/plans/`](../docs/plans/). This `guide/` folder is the **consolidated operator + deep-dive reference**, with implementation truth taken from code under [`tracks/instructor/`](../tracks/instructor/).
 
 ---
 
@@ -29,7 +29,7 @@ flowchart LR
   s4["Stage 4\nCross-encoder"]
   s5["Stage 5\nCascade score"]
   s6["Stage 6\nReasoning"]
-  out["team_xxx.csv"]
+  out["SignalHunters_ranking.csv"]
 
   pool --> s0
   s0 --> s1
@@ -145,7 +145,7 @@ Ensure `data/candidates.jsonl` exists (or point Stage 0 `run.py` at a smaller de
 
 ### 4. Edit `config.yaml`
 
-Set `stage5.team_id` and `stage6.team_id` to your registered participant ID (e.g. `team_xxx`).
+Set `stage5.team_id` and `stage6.team_id` to `SignalHunters` in [`config.yaml`](../config.yaml).
 
 ### 5. Offline precompute (once per pool)
 
@@ -163,11 +163,20 @@ python tracks/instructor/stage0/run_reasoning_raw_precompute.py
 
 ## Running instructions
 
-### Full ranking (Stages 1–5)
+### Full ranking (Stages 1–5) — hackathon entry point
+
+```powershell
+$env:REDROB_CPU_ONLY = "1"
+python rank.py --candidates ./data/candidates.jsonl --out ./SignalHunters_ranking.csv
+```
+
+Or:
 
 ```powershell
 python tracks/instructor/run_pipeline.py
 ```
+
+`rank.py` writes **`./SignalHunters_ranking.csv`** (3 columns). `run_pipeline.py` writes a dev CSV with template reasoning under stage artifacts.
 
 Or stage-by-stage:
 
@@ -181,7 +190,13 @@ python tracks/instructor/stage5/run.py
 
 ### Final submission with reasoning (Stage 6)
 
-**After Stage 5** produces `artifacts/runtime/stage5/stage5_scored_top100.parquet`:
+**After `rank.py`** produces `SignalHunters_ranking.csv`:
+
+```powershell
+python apply_reasoning.py
+```
+
+Or via the instructor runner (writes under `artifacts/runtime/stage6/`):
 
 ```powershell
 python tracks/instructor/stage6/run.py
@@ -191,15 +206,16 @@ python tracks/instructor/stage6/run.py
 
 | Stage | Primary output |
 |-------|----------------|
-| 5 | `artifacts/runtime/stage5/team_xxx.csv` (scores + template reasoning) |
-| 6 | `artifacts/runtime/stage6/team_xxx.csv` (**final submission** with 3-sentence reasoning) |
+| 5 | `artifacts/runtime/stage5/SignalHunters.csv` |
+| 6 | `artifacts/runtime/stage6/SignalHunters.csv` |
+| **Submit** | **`./SignalHunters.csv`** (repo root; from `apply_reasoning.py`) |
 
 Stage 6 also writes `stage6_reasoning.parquet` (audit) and `stage6_summary.json` (timing, worker count).
 
 ### Validate submission
 
 ```powershell
-python tools/validate_submission.py artifacts/runtime/stage6/team_xxx.csv
+python tools/validate_submission.py SignalHunters.csv
 ```
 
 Checks: 100 rows, `CAND_XXXXXXX` IDs, ranks 1–100, non-increasing scores, tie-break by `candidate_id`.
@@ -237,6 +253,7 @@ Stage 1 constants (UMAP dims, HDBSCAN, floor=100) live in [`tracks/instructor/co
 
 ## Related documentation
 
+
 - Operator quick-start: [`README.md`](../README.md) (note: README still describes Stage 5 as final CSV; use Stage 6 for submission)
 - Repo layout: [`docs/REPO_LAYOUT.md`](../docs/REPO_LAYOUT.md)
-- Historical plans: [`docs/`](../docs/) (may diverge from current code — **code wins**)
+- Historical plans: [`docs/plans/`](../docs/plans/) (may diverge from current code — **code wins**)

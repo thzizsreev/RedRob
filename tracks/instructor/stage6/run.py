@@ -12,11 +12,14 @@ Outputs (under artifacts/runtime/stage6/):
   {team_id}.csv
   stage6_reasoning.parquet
   stage6_summary.json
+
+Also copies the final CSV to ./SignalHunters_reasoning.csv in the repo root.
 """
 
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 from time import perf_counter
@@ -26,7 +29,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from tracks.instructor.stage6 import print_stage6_summary, run
-from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE6_DIR
+from tracks.shared.paths import ROOT_DIR, RUNTIME_STAGE6_DIR, REASONING_CSV_PATH
 
 CONFIG_PATH = ROOT_DIR / "config.yaml"
 OUTPUT_DIR = RUNTIME_STAGE6_DIR
@@ -56,6 +59,8 @@ def main() -> None:
     start = perf_counter()
     result = run(config_path=args.config_path, output_dir=args.output_dir)
     print_stage6_summary(result)
+    shutil.copy2(result.csv_path, REASONING_CSV_PATH)
+    print(f"Submission CSV (repo root): {REASONING_CSV_PATH.resolve()}")
     print(f"Stage 6 completed in {perf_counter() - start:.2f} seconds")
 
 

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Large data / artifacts (regenerate locally)
+candidates.jsonl
+candidates.jsonl.gz
+sample_candidates.json
+*.npy
+*.npz
+*.pkl
+artifacts/*
+!artifacts/.gitkeep
+
+# Secrets
+.env
+
+# IDE
+.idea/
+.vscode/

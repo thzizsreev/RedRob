@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -155,6 +156,10 @@ class InstructorONNX:
 
 
 def load_embedder() -> InstructorONNX:
+    if os.environ.get("REDROB_CPU_ONLY") == "1":
+        from tracks.instructor.core.cpu_embedder import InstructorONNXCPU
+
+        return InstructorONNXCPU()  # type: ignore[return-value]
     print("Loading INSTRUCTOR-large ONNX embedder...")
     return InstructorONNX()
 

@@ -97,6 +97,31 @@ def load_reasoning_raw_cache(path: Path) -> dict[str, dict[str, Any]]:
     return cache
 
 
+def parse_ranking_csv(path: Path) -> list[dict[str, Any]]:
+    """Read ranking-only CSV rows (candidate_id, rank, score)."""
+    if not path.exists():
+        raise FileNotFoundError(f"Ranking CSV not found: {path}")
+    with open(path, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        if reader.fieldnames not in (
+            ["candidate_id", "rank", "score"],
+            ["candidate_id", "rank", "score", "reasoning"],
+        ):
+            raise ValueError(
+                f"Unexpected ranking CSV header in {path}: {reader.fieldnames}"
+            )
+        rows: list[dict[str, Any]] = []
+        for row in reader:
+            rows.append(
+                {
+                    "candidate_id": str(row["candidate_id"]).strip(),
+                    "rank": int(row["rank"]),
+                    "score": float(row["score"]),
+                }
+            )
+    return rows
+
+
 def parse_submission_csv(path: Path) -> list[dict[str, Any]]:
     """Read submission CSV rows (candidate_id, rank, score, reasoning)."""
     if not path.exists():
@@ -255,6 +280,38 @@ def export_reasoning_lookup_from_csv(
         source_path=csv_path,
     )
     return write_reasoning_lookup(out_path, payload)
+
+
+def build_candidate_dicts_for_ranking(
+    config: Stage6Config,
+    ranking_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    sorted_rows = sorted(ranking_rows, key=lambda r: int(r["rank"]))
+    ids = {str(r["candidate_id"]) for r in sorted_rows}
+    top_df = load_stage5_top100(config.stage5_top100_path)
+    by_id = {
+        str(row["candidate_id"]): dict(row) for row in top_df.iter_rows(named=True)
+    }
+    missing = ids - set(by_id)
+    if missing:
+        examples = sorted(missing)[:5]
+        raise ValueError(
+            f"{len(missing)} ranking CSV candidate(s) missing from Stage 5 parquet. "
+            f"Examples: {examples}"
+        )
+    jsonl = load_jsonl_records(config.candidates_jsonl_path, ids)
+    skills = load_skill_scores(config.candidate_features_path, ids)
+    candidates: list[dict[str, Any]] = []
+    for row in sorted_rows:
+        cid = str(row["candidate_id"])
+        candidates.append(
+            assemble_candidate_dict(
+                by_id[cid],
+                jsonl[cid],
+                skill_scores=skills.get(cid),
+            )
+        )
+    return candidates
 
 
 def build_candidate_dicts(config: Stage6Config) -> tuple[pl.DataFrame, list[dict[str, Any]]]:

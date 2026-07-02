@@ -97,6 +97,9 @@ def adaptive_cut(
     if union_df.height == 0:
         raise ValueError("Union is empty — cannot produce Stage 3 output")
 
+    effective_min_k = min(config.min_k, union_df.height)
+    effective_max_k = min(config.max_k, union_df.height)
+
     fused = union_df["fused_score"]
     mu = float(fused.mean())
     sigma = float(fused.std())
@@ -105,29 +108,29 @@ def adaptive_cut(
     above = union_df.filter(pl.col("fused_score") >= threshold)
     count = above.height
 
-    if count > config.max_k:
+    if count > effective_max_k:
         selected = (
             above.sort(["fused_score", "candidate_id"], descending=[True, False])
-            .head(config.max_k)
+            .head(effective_max_k)
         )
-    elif count < config.min_k:
+    elif count < effective_min_k:
         warnings.warn(
             f"Only {count} candidates above threshold {threshold:.6f}; "
-            f"taking top {config.min_k} by fused_score",
+            f"taking top {effective_min_k} by fused_score",
             stacklevel=2,
         )
         selected = (
             union_df.sort(["fused_score", "candidate_id"], descending=[True, False])
-            .head(config.min_k)
+            .head(effective_min_k)
         )
     else:
         selected = above.sort(["fused_score", "candidate_id"], descending=[True, False])
 
     output_count = selected.height
-    if output_count < config.min_k or output_count > config.max_k:
+    if output_count < effective_min_k or output_count > effective_max_k:
         raise ValueError(
             f"Stage 3 output count {output_count} outside bounds "
-            f"[{config.min_k}, {config.max_k}]. threshold={threshold:.6f}, "
+            f"[{effective_min_k}, {effective_max_k}]. threshold={threshold:.6f}, "
             f"union_size={union_df.height}"
         )
 

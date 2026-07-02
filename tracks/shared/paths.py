@@ -6,6 +6,12 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = ROOT_DIR / "data"
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
 
+# Hackathon filenames (registered participant ID = SignalHunters)
+TEAM_ID = "SignalHunters"
+RANKING_CSV_PATH = ROOT_DIR / f"{TEAM_ID}.csv"
+REASONING_CSV_PATH = ROOT_DIR / f"{TEAM_ID}_reasoning.csv"
+SUBMISSION_CSV_PATH = REASONING_CSV_PATH
+
 # Instructor pipeline runtime outputs (stage 0 → 6)
 RUNTIME_DIR = ARTIFACTS_DIR / "runtime"
 RUNTIME_STAGE0_DIR = RUNTIME_DIR / "stage0"

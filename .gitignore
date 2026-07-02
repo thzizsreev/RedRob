@@ -12,36 +12,30 @@ venv/
 .coverage
 htmlcov/
 
-# Large candidate datasets (download separately; sample JSONs backed up locally)
+# Candidate pool (download separately)
 data/candidates.jsonl
 data/candidates.jsonl.gz
 data/sample*.json
 !data/sample_candidates.json
 
-# Track A instructor pipeline outputs (rebuild via tracks/instructor/stage{0..5}/run.py)
-#   artifacts/precomputed/: legacy global parquet paths (Stage 4/5 summaries)
-#   artifacts/runtime/stage0/: FAISS index, id_map, candidate_vectors.npy, jd_query_vec.npy,
-#       candidate_features.parquet (skill_weighted_score), stage3_query_vectors/, manifest
-#   artifacts/runtime/stage1/: filtered_ids.json, cluster artifacts
-#   artifacts/runtime/stage2/: stage2_gated.parquet, stage2_summary.json, removed logs
-#   artifacts/runtime/stage3/: stage3_retrieved.parquet
-#   artifacts/runtime/stage4/: stage4_reranked.parquet, stage4_rank_delta.csv
-#   artifacts/runtime/stage5/: team_xxx.csv, stage5_scored.parquet, stage5_summary.json
+# Pipeline artifacts (regenerate via stage0 + run_pipeline.py + stage6)
 artifacts/*
 !artifacts/.gitkeep
 artifacts/**
 !artifacts/**/
 !artifacts/**/.gitkeep
+!artifacts/runtime/stage5/
+!artifacts/runtime/stage5/**
 
-# Submission CSV if copied to repo root (canonical path: artifacts/runtime/stage5/)
-team_*.csv
+# Submission CSV at repo root (canonical: artifacts/runtime/stage6/)
+/team_*.csv
+/SignalHunters.csv
+/SignalHunters_reasoning.csv
 
-# INSTRUCTOR ONNX export output (regenerate: cd onnx && python export_to_onnx.py)
+# Exported models
 onnx/models/**
 !onnx/models/
 !onnx/models/.gitkeep
-
-# Cross-encoder ONNX export (regenerate: python models/export_cross_encoder.py)
 models/cross_encoder/**
 !models/cross_encoder/
 !models/cross_encoder/.gitkeep
@@ -54,7 +48,7 @@ models/encoder_test/
 models/instructor_large_onnx/
 models/ort_test/
 
-# Generated HTML/JSON views (regenerate via tools/)
+# Generated views
 outputs/team_views/**
 !outputs/team_views/
 !outputs/team_views/.gitkeep
@@ -64,42 +58,36 @@ outputs/eliminations/**
 outputs/test_runs/**
 !outputs/test_runs/
 !outputs/test_runs/.gitkeep
-
-# Legacy root-level view dirs (pre-reorg)
 team_results_view*/
 
-# Naive track generated outputs
+# Docker sandbox run output (when cwd is repo root)
+output/
+
+# Naive track outputs
 tracks/naive/artifacts/**
 !tracks/naive/artifacts/
 !tracks/naive/artifacts/.gitkeep
-
-# build_collection.py default output (outside repo, but ignore if created here)
 stage4_reranked_collection/
 
-# Local environment and secrets
+# Secrets and logs
 .env
 .env.*
-
-# Install / run logs
 torch_install.log
 *.log
 
-# Stage 3 skill-track test harness (regenerate: experiments/stage3/precompute/run.py → runner/run.py)
+# Experiment outputs
 experiments/stage3/precompute/artifacts/**
 !experiments/stage3/precompute/artifacts/
 !experiments/stage3/precompute/artifacts/.gitkeep
 experiments/stage3/runner/outputs/**
 !experiments/stage3/runner/outputs/
 !experiments/stage3/runner/outputs/.gitkeep
-
-# K-means experiment outputs
 experiments/kmeans/precomputed/**
 experiments/kmeans/outputs/**
-
-# Honeypot research pipeline outputs
 experiments/honeypot/output/**
 !experiments/honeypot/output/
 !experiments/honeypot/output/.gitkeep
+
 
 # Vector steering feasibility test outputs
 experiments/vectorSteering/testing/output/**
@@ -107,14 +95,24 @@ experiments/vectorSteering/testing/output/**
 !experiments/vectorSteering/testing/output/.gitkeep
 experiments/vectorSteering/feasibility/results.json
 
+# Docker sandbox ephemeral runtime
+docker/work/
+
+# Docker sandbox precomputed pool (regenerate via docker/scripts/build_precompute.py)
+docker/artifacts/precomputed/pool1k/stage0/**
+docker/artifacts/precomputed/pool1k/stage1/**
+!docker/artifacts/precomputed/pool1k/stage0/
+!docker/artifacts/precomputed/pool1k/stage1/
+!docker/artifacts/precomputed/pool1k/stage0/.gitkeep
+!docker/artifacts/precomputed/pool1k/stage1/.gitkeep
+
 # K-means filter scratch (experimental Stage 1 alternative)
+
 data/filter_kmeans/
 
-# Editor / IDE
+# Editor / OS
 .vscode/
 .cursor/
 .idea/
-
-# OS junk
 .DS_Store
 Thumbs.db

@@ -1,0 +1,75 @@
+# Portal metadata — mirror these fields in the hackathon submission form.
+# Registered participant ID: SignalHunters
+# rank.py → SignalHunters.csv (3 columns, Stage 3 reproduce)
+# apply_reasoning.py → SignalHunters_reasoning.csv (4 columns, portal upload)
+
+team_name: "SignalHunters"
+
+primary_contact:
+  name: "Raga Pranathi Mamidipaka"
+  email: "reachoutraga@gmail.com"
+  phone: "+91-7207492948"
+
+team_members:
+  - name: "Raga Pranathi Mamidipaka"
+    email: "reachoutraga@gmail.com"
+    phone: "+91-7207492948"
+    role: "Team Lead & Pipeline Integration"
+  - name: "Sri Pranav Mamidipaka"
+    email: "msreev12@gmail.com"
+    phone: "+91-7418359068"
+    role: "Retrieval & Ranking (Stages 0–4)"
+  - name: "Rishi Dhaneshwer Maddi"
+    email: "maddi.rishi2468@gmail.com"
+    phone: "+91-9704670400"
+    role: "Scoring, Reasoning & Docker Sandbox (Stages 5–6)"
+
+github_repo: "https://github.com/thzizsreev/RedRob"
+
+sandbox_link: "https://hub.docker.com/r/thzizsreev/redrob-sandbox"
+
+# Stage 3 reproduces the ≤5 min ranking step (ranks/scores only, 3 columns).
+reproduce_command: "python rank.py --candidates ./data/candidates.jsonl --out ./SignalHunters.csv"
+reproduce_command_shorthand: "python rank.py"
+# Full submission with reasoning (not part of the 5-minute budget).
+reproduce_command_full_submission: "python apply_reasoning.py --input ./SignalHunters.csv --out ./SignalHunters_reasoning.csv"
+reproduce_command_full_submission_shorthand: "python apply_reasoning.py"
+reproduce_command_docker: "docker run --rm -v \"$(pwd):/output\" thzizsreev/redrob-sandbox:latest"
+submission_file: "./SignalHunters_reasoning.csv"
+ranking_file: "./SignalHunters.csv"
+
+compute:
+  platform: "Windows 11 / Docker Desktop (CPU)"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.11"
+  os: "Windows 11"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: true
+  pre_computation_notes: |
+    Stage 0 offline (vectors, FAISS, clusters, ONNX exports). Stage 3 reproduces rank.py
+    (Stages 1–5, ≤5 min CPU) → SignalHunters.csv. Portal upload is SignalHunters_reasoning.csv
+    (adds Stage 6 reasoning via apply_reasoning.py; lookup cache + local T5 ONNX; not in 5-min budget).
+  ranking_wall_clock_seconds: 175
+  ranking_peak_ram_gb: 1.5
+
+ai_tools_used:
+  - "Cursor"
+
+ai_usage_summary: |
+  Used Cursor for architecture, implementation, and code review.
+  No hosted LLM API calls during ranking (rank.py). Stage 0 precompute uses local ONNX/GPU exports only.
+
+methodology_summary: |
+  INSTRUCTOR-large (2304-d) offline embeddings with UMAP/HDBSCAN cluster filter, hard tabular
+  gate with honeypot rules, hybrid retrieval (dense + skill RRF), cross-encoder rerank (ONNX CPU),
+  and distribution-aware cascade scoring. Docker sandbox ranks baked 1K pool; full submission via
+  rank.py + apply_reasoning.py on 100K with precomputed artifacts.
+
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true

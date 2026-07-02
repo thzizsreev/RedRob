@@ -145,6 +145,19 @@ def join_scoring_inputs(
     return pl.concat([base, join_df], how="horizontal")
 
 
+def write_ranking_csv(path: Path, rows: list[dict]) -> None:
+    """Write ranking-only CSV (candidate_id, rank, score) — no reasoning column."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["candidate_id", "rank", "score"],
+            lineterminator="\n",
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def write_submission_csv(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="") as f:
@@ -164,10 +177,25 @@ def write_stage5_outputs(
     top_df: pl.DataFrame,
     submission_rows: list[dict],
     summary: dict,
+    *,
+    include_reasoning: bool = True,
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / f"{team_id}.csv"
-    write_submission_csv(csv_path, submission_rows)
+    if include_reasoning:
+        write_submission_csv(csv_path, submission_rows)
+    else:
+        write_ranking_csv(
+            csv_path,
+            [
+                {
+                    "candidate_id": row["candidate_id"],
+                    "rank": row["rank"],
+                    "score": row["score"],
+                }
+                for row in submission_rows
+            ],
+        )
 
     scored_df.write_parquet(output_dir / "stage5_scored.parquet")
     top_df.write_parquet(output_dir / "stage5_scored_top100.parquet")

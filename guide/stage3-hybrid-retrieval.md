@@ -202,4 +202,4 @@ Q1 facets and subspace weights affect precomputed vectors (Stage 0).
 
 - **Expected output:** 300–600 rows; enforced by `adaptive_cut` or hard min/max.
 - **Tuning:** Increase `alpha_neg` to aggressively down-rank anti-pattern profiles.
-- **Historical note:** [`docs/stage3_plan.md`](../docs/stage3_plan.md) described BM25; production uses skill track per [`docs/stage3_new_plan.md`](../docs/stage3_new_plan.md).
+- **Historical note:** [`docs/plans/stage3_plan.md`](../docs/plans/stage3_plan.md) described BM25; production uses skill track per [`docs/plans/stage3_new_plan.md`](../docs/plans/stage3_new_plan.md).

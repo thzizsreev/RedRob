@@ -1,7 +1,7 @@
 # Stage 3 Isolated Test Environment
 
 Self-contained sandbox implementing the **skill-track Stage 3** plan from
-`docs/stage3_new_plan.md` (BM25 L4 replaced by `skill_weighted_score` L3).
+`docs/plans/stage3_new_plan.md` (BM25 L4 replaced by `skill_weighted_score` L3).
 
 **Does not modify** any production pipeline code under `tracks/`.
 

@@ -113,7 +113,7 @@ Each rule is a predicate \(f_k(\text{record}) \in \{\text{true}, \text{false}\}\
 
 ### 7.4 Honeypot rules
 
-Deterministic checks on timeline consistency and skill fraud (see [`docs/honeypot_filter_plan.md`](../docs/honeypot_filter_plan.md)):
+Deterministic checks on timeline consistency and skill fraud (see [`docs/plans/honeypot_filter_plan.md`](../docs/plans/honeypot_filter_plan.md)):
 
 - Impossible date orderings
 - Skill endorsement vs tenure mismatches

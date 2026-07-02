@@ -11,10 +11,10 @@
 | Aspect | Value |
 |--------|-------|
 | Input | 300 reranked candidates |
-| Output | `stage5_scored_top100.parquet`, `team_xxx.csv` |
+| Output | `stage5_scored_top100.parquet`, `SignalHunters.csv` |
 | Formula | **v2 distribution-aware cascade** ([`scoring.py`](../tracks/instructor/stage5/scoring.py)) |
 
-> **Note:** [`docs/reports/stage5_report.md`](../docs/reports/stage5_report.md) documents an older 7-layer formula. **Code wins** — this guide describes v2 per `stage5_impact_calibration.md`.
+> **Note:** [`docs/reports/stage5_report.md`](../docs/reports/stage5_report.md) documents an older 7-layer formula. **Code wins** — this guide describes v2 per [`stage5_impact_calibration.md`](../docs/plans/stage5_impact_calibration.md).
 
 ---
 

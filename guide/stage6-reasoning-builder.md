@@ -11,7 +11,7 @@
 | Aspect | Value |
 |--------|-------|
 | Input | Top 100 from Stage 5 + JSONL profiles + optional raw cache |
-| Output | `artifacts/runtime/stage6/team_xxx.csv` |
+| Output | `artifacts/runtime/stage6/SignalHunters.csv` |
 | Runtime | CPU-only ONNX paraphraser, parallel workers |
 
 **Not in `run_pipeline.py`** — run explicitly after Stage 5.
@@ -40,6 +40,8 @@
 ### Entry point
 
 ```powershell
+python apply_reasoning.py
+# or
 python tracks/instructor/stage6/run.py
 ```
 
@@ -58,7 +60,7 @@ python tracks/instructor/stage6/run.py
 Validate:
 
 ```powershell
-python tools/validate_submission.py artifacts/runtime/stage6/team_xxx.csv
+python tools/validate_submission.py artifacts/runtime/stage6/SignalHunters.csv
 ```
 
 ---
@@ -83,7 +85,7 @@ flowchart TB
   pool[ThreadPoolExecutor]
   para[paraphrase_once x3]
   recon[reconstruct_reasoning]
-  csv[team_xxx.csv]
+  csv[SignalHunters.csv]
   top100 --> assemble
   jsonl --> assemble
   cache --> raw

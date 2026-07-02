@@ -1,0 +1,2 @@
+# Use repo root — see ../requirements.txt
+-r ../requirements.txt

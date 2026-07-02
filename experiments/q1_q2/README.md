@@ -36,4 +36,4 @@ python experiments/q1_q2/run_test.py
 - TC4 Q2 ≤ 0.78 and (Q1 − Q2) ≥ 0.06
 - TC5 Q1 ≤ 0.82 and (TC1 Q1 − TC5 Q1) ≥ 0.08
 
-See [docs/q1q2_vector_test_plan.md](../docs/q1q2_vector_test_plan.md).
+See [docs/plans/q1q2_vector_test_plan.md](../../docs/plans/q1q2_vector_test_plan.md).

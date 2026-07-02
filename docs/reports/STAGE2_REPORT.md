@@ -343,7 +343,7 @@ Core/adjacent engineering titles never hard-remove regardless of keyword density
 
 ## 10. Honeypot rules — timeline (`honeypot_rules.py`)
 
-Deterministic rules aligned with `docs/honeypot_filter_plan.md`.
+Deterministic rules aligned with `docs/plans/honeypot_filter_plan.md`.
 
 ### Hard rules (single hit → exclude)
 

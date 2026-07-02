@@ -9,11 +9,14 @@ from time import perf_counter
 from tracks.instructor.stage6.config import Stage6Config, load_stage6_config
 from tracks.instructor.stage6.io import (
     build_candidate_dicts,
+    build_candidate_dicts_for_ranking,
     load_reasoning_lookup,
     load_reasoning_raw_cache,
+    parse_ranking_csv,
     reasoning_rows_from_lookup,
     write_reasoning_lookup_from_submission,
     write_stage6_outputs,
+    write_submission_csv,
 )
 from tracks.instructor.stage6.paraphrase_onnx import init_paraphraser, make_paraphrase_fn
 from tracks.instructor.stage6.pool import process_candidates_parallel
@@ -163,6 +166,131 @@ def run(
         worker_count=worker_count,
         elapsed_seconds=elapsed,
         csv_path=csv_path,
+        output_dir=config.output_dir,
+        summary=summary,
+    )
+
+
+def run_from_ranking_csv(
+    *,
+    ranking_csv_path: Path,
+    output_csv_path: Path,
+    config_path: Path,
+    output_dir: Path | None = None,
+) -> Stage6Result:
+    """Apply Stage 6 reasoning to a ranking-only CSV; write full submission CSV."""
+    start = perf_counter()
+    config = load_stage6_config(config_path)
+    if output_dir is not None:
+        config = replace(config, output_dir=output_dir.resolve())
+
+    ranking_rows = parse_ranking_csv(ranking_csv_path)
+    candidates = build_candidate_dicts_for_ranking(config, ranking_rows)
+    candidate_ids = [str(c["candidate_id"]) for c in candidates]
+    raw_cache = load_reasoning_raw_cache(config.reasoning_raw_path)
+
+    reasoning_lookup = load_reasoning_lookup(config.reasoning_lookup_path)
+    cached_rows = None
+    if config.use_reasoning_lookup in ("auto", "true"):
+        cached_rows = reasoning_rows_from_lookup(candidate_ids, reasoning_lookup)
+        if config.use_reasoning_lookup == "true" and cached_rows is None:
+            missing = [cid for cid in candidate_ids if cid not in reasoning_lookup]
+            raise ValueError(
+                f"use_reasoning_lookup=true but {len(missing)} candidate(s) missing "
+                f"from {config.reasoning_lookup_path}. Examples: {sorted(missing)[:5]}"
+            )
+
+    worker_count, worker_rationale = resolve_worker_count(
+        len(candidates),
+        ort_intra_op_threads=config.ort_intra_op_threads,
+        estimated_session_mb=config.estimated_session_mb,
+        memory_reserve_ratio=config.memory_reserve_ratio,
+        max_workers=config.max_workers,
+    )
+
+    paraphrase_start = perf_counter()
+    if cached_rows is not None:
+        print(
+            f"Using reasoning lookup ({len(cached_rows)} rows) — skipping paraphrase."
+        )
+        reasoning_rows = cached_rows
+        worker_count = 0
+        worker_rationale = {**worker_rationale, "chosen": 0, "reasoning_lookup": True}
+    else:
+        print(f"Stage 6 worker count: {worker_count} ({worker_rationale})")
+        init_paraphraser(config)
+        paraphrase_fn = make_paraphrase_fn()
+        reasoning_rows = process_candidates_parallel(
+            candidates,
+            raw_cache,
+            paraphrase_fn,
+            worker_count,
+        )
+    paraphrase_elapsed = perf_counter() - paraphrase_start
+
+    reasoning_by_id = {str(r["candidate_id"]): r for r in reasoning_rows}
+    submission_rows: list[dict] = []
+    for row in sorted(ranking_rows, key=lambda r: int(r["rank"])):
+        cid = str(row["candidate_id"])
+        reasoning = reasoning_by_id[cid]
+        submission_rows.append(
+            {
+                "candidate_id": cid,
+                "rank": int(row["rank"]),
+                "score": round(float(row["score"]), 6),
+                "reasoning": reasoning["reasoning"],
+            }
+        )
+
+    elapsed = perf_counter() - start
+    summary = {
+        "input_count": len(candidates),
+        "output_count": len(submission_rows),
+        "worker_count": worker_count,
+        "worker_rationale": worker_rationale,
+        "paraphrase_seconds": round(paraphrase_elapsed, 3),
+        "elapsed_seconds": round(elapsed, 3),
+        "rows_per_second": round(len(candidates) / paraphrase_elapsed, 3)
+        if paraphrase_elapsed > 0
+        else 0.0,
+        "team_id": config.team_id,
+        "monotonic_corrections": 0,
+        "reasoning_lookup_used": cached_rows is not None,
+        "ranking_csv_path": str(ranking_csv_path.resolve()),
+        "output_csv_path": str(output_csv_path.resolve()),
+    }
+
+    output_csv_path.parent.mkdir(parents=True, exist_ok=True)
+    write_submission_csv(output_csv_path, submission_rows)
+    print(f"Wrote {output_csv_path}")
+
+    write_stage6_outputs(
+        config.output_dir,
+        config.team_id,
+        submission_rows,
+        reasoning_rows,
+        summary,
+    )
+
+    if cached_rows is None:
+        write_reasoning_lookup_from_submission(
+            submission_rows,
+            output_csv_path,
+            config.reasoning_lookup_path,
+        )
+
+    validate_stage6_csv(
+        output_csv_path,
+        expected_rows=len(submission_rows),
+        input_candidate_ids=set(reasoning_by_id.keys()),
+    )
+
+    return Stage6Result(
+        input_count=len(candidates),
+        output_count=len(submission_rows),
+        worker_count=worker_count,
+        elapsed_seconds=elapsed,
+        csv_path=output_csv_path,
         output_dir=config.output_dir,
         summary=summary,
     )

@@ -3,7 +3,7 @@
 Diary and porting reference for moving the skill-track Stage 3 design from
 `experiments/stage3/` into production `tracks/instructor/stage3/`.
 
-Based on: [`docs/stage3_new_plan.md`](../docs/stage3_new_plan.md) (BM25 L4 → skill L3).
+Based on: [`docs/plans/stage3_new_plan.md`](../../docs/plans/stage3_new_plan.md) (BM25 L4 → skill L3).
 
 ---
 
@@ -97,7 +97,7 @@ python experiments/stage3/runner/validate_output.py
 
 ### Runner output
 
-Same contract as `docs/stage3_new_plan.md` output section:
+Same contract as `docs/plans/stage3_new_plan.md` output section:
 - `skill_score`, `skill_rank` (not `bm25_*`)
 - `q1_score`, `q2_score`, `q3_neg_sim`, `rrf_score`, `fused_score`, `stage3_rank`
 - Row count in `[min_k, max_k]`
@@ -165,7 +165,7 @@ Precompute skip logic (from test): compare `query_config_hash` + `cohort_config_
 
 ## 8. Operator validation
 
-After integration, run checklist from `docs/stage3_new_plan.md`:
+After integration, run checklist from `docs/plans/stage3_new_plan.md`:
 
 1. Output row count 300–600 (prod) or configured bounds (test)
 2. Top 10 look like senior ML/IR engineers

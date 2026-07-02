@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
 
-from tracks.instructor.core.config import STAGE1_RANDOM_SEED
+from tracks.instructor.core.config import STAGE1_FLOOR, STAGE1_RANDOM_SEED
 from tracks.instructor.stage1 import run_stage1_filter
 from tracks.instructor.stage1.pipeline import Stage1RunResult
 from tracks.instructor.stage2 import print_stage2_summary, run as run_stage2
@@ -56,7 +56,9 @@ class RankingPipelineConfig:
     candidates_path: Path = CANDIDATES_JSONL_PATH
     config_path: Path = ROOT_DIR / "config.yaml"
     random_seed: int = STAGE1_RANDOM_SEED
+    stage1_floor: int | None = None
     print_summaries: bool = True
+    include_reasoning: bool = True
 
 
 @dataclass(frozen=True)
@@ -100,12 +102,14 @@ def run_ranking_pipeline(
     timings: list[StageTiming] = []
     pipeline_start = perf_counter()
 
+    stage1_floor = cfg.stage1_floor if cfg.stage1_floor is not None else STAGE1_FLOOR
     stage1_start = perf_counter()
     stage1 = run_stage1_filter(
         cfg.stage0_path,
         stage1_path=cfg.stage1_path,
         output_dir=cfg.stage1_path,
         random_seed=cfg.random_seed,
+        floor=stage1_floor,
         print_summary=cfg.print_summaries,
     )
     timings.append(
@@ -160,6 +164,7 @@ def run_ranking_pipeline(
         stage4_path=stage4_reranked,
         output_dir=cfg.stage5_output_dir,
         config_path=cfg.config_path,
+        include_reasoning=cfg.include_reasoning,
     )
     if cfg.print_summaries:
         print_stage5_summary(stage5)

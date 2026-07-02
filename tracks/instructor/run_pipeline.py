@@ -23,6 +23,7 @@ Importable API (e.g. resume ranking integration):
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 from time import perf_counter
@@ -42,6 +43,7 @@ from tracks.shared.paths import (
     RUNTIME_STAGE3_DIR,
     RUNTIME_STAGE4_DIR,
     RUNTIME_STAGE5_DIR,
+    REASONING_CSV_PATH,
 )
 
 
@@ -178,8 +180,10 @@ def main() -> None:
     start_time = perf_counter()
     result = run_ranking_pipeline(config)
     total = perf_counter() - start_time
+    shutil.copy2(result.final_csv_path, REASONING_CSV_PATH)
     print(f"Pipeline completed in {total:.2f} seconds")
-    print(f"\nFinal submission: {result.final_csv_path}")
+    print(f"\nStage artifacts: {result.final_csv_path}")
+    print(f"Reasoning CSV (repo root): {REASONING_CSV_PATH.resolve()}")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 """
 Build reasoning lookup from a submission CSV.
 
-    python tools/build_reasoning_lookup.py artifacts/runtime/stage6/team_xxx.csv
+    python tools/build_reasoning_lookup.py artifacts/runtime/stage6/SignalHunters.csv
 
 Output: artifacts/precomputed/reasoning_lookup.json
   { "by_candidate_id": { "CAND_...": { "rank", "score", "reasoning" } } }
@@ -19,7 +19,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from tracks.instructor.stage6.io import export_reasoning_lookup_from_csv
-from tracks.shared.paths import REASONING_LOOKUP_PATH
+from tracks.shared.paths import REASONING_LOOKUP_PATH, TEAM_ID
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         nargs="?",
         default=None,
-        help="Submission CSV (default: artifacts/runtime/stage6/team_xxx.csv from config)",
+        help="Submission CSV (default: artifacts/runtime/stage6/SignalHunters.csv from config)",
     )
     parser.add_argument(
         "--out",
@@ -51,7 +51,7 @@ def main() -> None:
         cfg_path = _ROOT / "config.yaml"
         with open(cfg_path, encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
-        team_id = raw.get("stage6", {}).get("team_id", "team_xxx")
+        team_id = raw.get("stage6", {}).get("team_id", TEAM_ID)
         out_dir = raw.get("stage6", {}).get("output_dir", "artifacts/runtime/stage6")
         csv_path = (_ROOT / out_dir / f"{team_id}.csv").resolve()
     else:

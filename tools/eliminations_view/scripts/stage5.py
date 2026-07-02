@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import csv
+import sys
 from pathlib import Path
 from typing import Any
 
+_ROOT = Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from eliminations_view.scripts._io import load_ids, load_json_dict, parquet_to_dict
 from eliminations_view.scripts.reasons import build_elimination_meta
+from tracks.shared.paths import TEAM_ID
 
 STAGE5_PIPELINE_KEYS = (
     "stage3_rank",
@@ -35,7 +41,7 @@ def collect_stage5(stage4_dir: Path, stage5_dir: Path) -> list[dict[str, Any]]:
     stage4_json = stage4_dir / "stage4_reranked.json"
     scored_parquet = stage5_dir / "stage5_scored.parquet"
     top_parquet = stage5_dir / "stage5_scored_top100.parquet"
-    team_csv = stage5_dir / "team_xxx.csv"
+    team_csv = stage5_dir / f"{TEAM_ID}.csv"
     summary_path = stage5_dir / "stage5_summary.json"
 
     if stage4_parquet.exists():

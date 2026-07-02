@@ -1,50 +1,51 @@
-# Repository layout
-
-```
-redrob/
-├── config.yaml              # Production pipeline config (stage2–5, stage3 query facets)
-├── tracks/                  # MAIN PIPELINE — Stage 0–5 + naive baseline
-│   ├── instructor/          # Track A (INSTRUCTOR-large, full funnel)
-│   ├── naive/               # Track B baseline
-│   └── shared/              # Path constants, shared helpers
-├── artifacts/runtime/       # Pipeline outputs (stage0 … stage5) — rebuild via stage runners
-├── data/                    # Candidate pools (candidates.jsonl, samples)
-├── models/                  # Cross-encoder ONNX export
-├── onnx/                    # INSTRUCTOR ONNX export
-├── docs/                    # Architecture & stage plans
-│
-├── experiments/             # Research, prototypes, tuning (NOT production path)
-│   ├── stage3/              # Stage 3 skill-track test harness
-│   ├── q1_q2/               # Q1/Q2 facet-centroid vector tuning
-│   ├── kmeans/              # K-means Stage 1 alternative
-│   ├── honeypot/            # LLM honeypot study
-│   ├── diagnostics/         # Stage 5 formula diagnostics
-│   ├── pipeline/            # Legacy pipeline scratch
-│   └── rishi/               # Personal experiment scratch
-│
-├── tools/                   # CLI utilities & report builders
-│   ├── build_team_view.py   # Stage 5 → HTML ranking page
-│   ├── build_eliminations_view.py
-│   ├── build_collection.py
-│   ├── validate_submission.py
-│   ├── rank.py              # Fast CPU retrieval test
-│   └── eliminations_view/   # Eliminations HTML generator
-│
-├── outputs/                 # Generated views & test run artifacts (gitignored)
-│   ├── team_views/          # HTML/JSON team results (was team_results_view*)
-│   ├── eliminations/        # Elimination funnel views
-│   └── test_runs/           # Clustering/filtering/retrieval tests (was test_output/)
-│
-└── tests/                   # Unit & integration tests
-```
-
-## Common commands (updated paths)
-
-| Task | Command |
-|------|---------|
-| Full pipeline | `python tracks/instructor/run_pipeline.py` |
-| Team HTML view | `python tools/build_team_view.py` |
-| Q1/Q2 vector test | `python experiments/q1_q2/run_test.py` |
-| Stage 3 experiment | `python experiments/stage3/precompute/run.py` then `runner/run.py` |
-
-Production code lives under **`tracks/`**. Everything under **`experiments/`** and **`outputs/`** is supporting work.
+# Repository layout
+
+```
+redrob/
+├── rank.py                  # Hackathon ranking entry point (Stages 1–5, CPU-only)
+├── apply_reasoning.py       # Stage 6 → SignalHunters.csv (upload)
+├── SignalHunters_ranking.csv   # Ranking-only output (gitignored; from rank.py)
+├── SignalHunters.csv        # Submission file (gitignored; from apply_reasoning.py)
+├── submission_metadata.yaml   # Portal metadata template
+├── config.yaml              # Production pipeline config (stage2–6)
+├── requirements.txt         # Python dependencies (full pipeline)
+├── README.md
+│
+├── tracks/                  # MAIN PIPELINE — Stage 0–6 + naive baseline (do not relocate)
+├── data/                    # Candidate pools (candidates.jsonl, samples)
+├── artifacts/               # Pipeline outputs — rebuild via stage runners
+├── docker/                  # Hackathon CPU sandbox image + scripts
+│
+├── guide/                   # Operator handbook + per-stage deep dives
+├── docs/                    # Planning artifacts and reference material
+│   ├── plans/               # Architecture & stage design plans
+│   ├── reports/             # Implementation reports
+│   ├── reference/           # submission_spec.txt, job description, honeypot notes
+│   └── REPO_LAYOUT.md
+│
+├── experiments/             # Research prototypes (NOT production path)
+├── tools/                   # CLI utilities & report builders
+├── tests/                   # Unit & integration tests
+├── models/                  # Cross-encoder & paraphraser ONNX export trees
+├── onnx/                    # INSTRUCTOR ONNX export
+└── outputs/                 # Generated views & test run artifacts (gitignored)
+```
+
+**Stage 3 reproduce:** `python rank.py` → `SignalHunters_ranking.csv` (3 columns, ≤5 min CPU).
+
+**Portal upload:** `SignalHunters.csv` (4 columns, from `python apply_reasoning.py`).
+
+Docker run (mount repo root to `/output`): writes ranking CSV for the baked 1K pool.
+
+## Common commands
+
+| Task | Command |
+|------|---------|
+| Ranking (spec, Stage 3) | `python rank.py --candidates data/candidates.jsonl --out SignalHunters_ranking.csv` |
+| Ranking (defaults) | `python rank.py` |
+| Full submission | `python apply_reasoning.py` |
+| Validate upload | `python tools/validate_submission.py SignalHunters.csv` |
+| Full pipeline (dev) | `python tracks/instructor/run_pipeline.py` |
+| Docker sandbox | `docker run --rm -v "$(pwd):/output" thzizsreev/redrob-sandbox:latest` |
+
+Production code lives under **`tracks/`**. Everything under **`experiments/`** and **`outputs/`** is supporting work.

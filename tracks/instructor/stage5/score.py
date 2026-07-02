@@ -18,7 +18,7 @@ from tracks.instructor.stage5.io import (
 )
 from tracks.instructor.stage5.reasoning import compose_reasoning
 from tracks.instructor.stage5.scoring import apply_scoring
-from tracks.instructor.stage5.validate import validate_submission_csv
+from tracks.instructor.stage5.validate import validate_ranking_csv, validate_submission_csv
 
 
 @dataclass(frozen=True)
@@ -137,6 +137,7 @@ def run(
     stage4_path: Path,
     output_dir: Path,
     config_path: Path,
+    include_reasoning: bool = True,
 ) -> Stage5Result:
     start = perf_counter()
     config = load_stage5_config(config_path)
@@ -148,25 +149,26 @@ def run(
     joined = join_scoring_inputs(stage4_df, config)
     scored = apply_scoring(joined, config)
 
-    reasoning_c1: list[str] = []
-    reasoning_c2: list[str] = []
-    reasoning_c3: list[str | None] = []
-    for row in scored.iter_rows(named=True):
-        row_dict = dict(row)
-        row_dict["chase_pen"] = row_dict.get("title_chasing_penalty")
-        row_dict["closed_pen"] = row_dict.get("closed_source_penalty")
-        c1, c2, c3, text = compose_reasoning(row_dict)
-        reasoning_c1.append(c1)
-        reasoning_c2.append(c2)
-        reasoning_c3.append(c3)
+    if include_reasoning:
+        reasoning_c1: list[str] = []
+        reasoning_c2: list[str] = []
+        reasoning_c3: list[str | None] = []
+        for row in scored.iter_rows(named=True):
+            row_dict = dict(row)
+            row_dict["chase_pen"] = row_dict.get("title_chasing_penalty")
+            row_dict["closed_pen"] = row_dict.get("closed_source_penalty")
+            c1, c2, c3, text = compose_reasoning(row_dict)
+            reasoning_c1.append(c1)
+            reasoning_c2.append(c2)
+            reasoning_c3.append(c3)
 
-    scored = scored.with_columns(
-        [
-            pl.Series("reasoning_clause_1", reasoning_c1),
-            pl.Series("reasoning_clause_2", reasoning_c2),
-            pl.Series("reasoning_clause_3", [c or "" for c in reasoning_c3]),
-        ]
-    )
+        scored = scored.with_columns(
+            [
+                pl.Series("reasoning_clause_1", reasoning_c1),
+                pl.Series("reasoning_clause_2", reasoning_c2),
+                pl.Series("reasoning_clause_3", [c or "" for c in reasoning_c3]),
+            ]
+        )
 
     ranked = scored.sort(["final_score", "candidate_id"], descending=[True, False])
     top_n = min(config.top_n, ranked.height)
@@ -187,24 +189,20 @@ def run(
             stacklevel=2,
         )
 
-    top_reasoning = [
-        str(r) for r in scored_with_flag.head(top_n)["reasoning_clause_1"].to_list()
-    ]
-    # rebuild full reasoning for top rows from scored frame
     submission_rows: list[dict] = []
     for row, score in zip(top.iter_rows(named=True), clamped_scores):
         row_dict = dict(row)
-        row_dict["chase_pen"] = row_dict.get("title_chasing_penalty")
-        row_dict["closed_pen"] = row_dict.get("closed_source_penalty")
-        _, _, _, reasoning = compose_reasoning(row_dict)
-        submission_rows.append(
-            {
-                "candidate_id": row["candidate_id"],
-                "rank": row["rank"],
-                "score": round(score, 6),
-                "reasoning": reasoning,
-            }
-        )
+        entry = {
+            "candidate_id": row["candidate_id"],
+            "rank": row["rank"],
+            "score": round(score, 6),
+        }
+        if include_reasoning:
+            row_dict["chase_pen"] = row_dict.get("title_chasing_penalty")
+            row_dict["closed_pen"] = row_dict.get("closed_source_penalty")
+            _, _, _, reasoning = compose_reasoning(row_dict)
+            entry["reasoning"] = reasoning
+        submission_rows.append(entry)
 
     elapsed = perf_counter() - start
     summary = _build_summary(
@@ -224,12 +222,20 @@ def run(
         top,
         submission_rows,
         summary,
+        include_reasoning=include_reasoning,
     )
-    validate_submission_csv(
-        csv_path,
-        expected_rows=top_n,
-        input_candidate_ids=input_ids,
-    )
+    if include_reasoning:
+        validate_submission_csv(
+            csv_path,
+            expected_rows=top_n,
+            input_candidate_ids=input_ids,
+        )
+    else:
+        validate_ranking_csv(
+            csv_path,
+            expected_rows=top_n,
+            input_candidate_ids=input_ids,
+        )
 
     return Stage5Result(
         input_count=stage4_df.height,

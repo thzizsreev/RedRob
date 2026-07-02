@@ -2,6 +2,48 @@
 
 Precision candidate-ranking pipeline for a senior AI engineering role (production retrieval, vector search, ranking, and evaluation). The **INSTRUCTOR track** funnels ~100,000 anonymized profiles through offline precompute, CPU runtime ranking (Stages 1–5), and optional Stage 6 reasoning into a validated top-100 submission CSV.
 
+---
+
+## Docker sandbox (quick run)
+
+CPU sandbox for hackathon reviewers — ranks a baked **1K pool** through Stages 1–5 in ~20s. **Not** the full 100K reproduce path (use [`rank.py`](#quick-start) for that).
+
+**Image:** [hub.docker.com/r/thzizsreev/redrob-sandbox](https://hub.docker.com/r/thzizsreev/redrob-sandbox)
+
+**Pull and run** — mount **repo root** to `/output` so the CSV is written beside this README:
+
+```powershell
+# Windows (PowerShell)
+docker pull thzizsreev/redrob-sandbox:latest
+docker run --rm -v "${PWD}:/output" thzizsreev/redrob-sandbox:latest
+```
+
+```bash
+# macOS / Linux
+docker pull thzizsreev/redrob-sandbox:latest
+docker run --rm -v "$(pwd):/output" thzizsreev/redrob-sandbox:latest
+```
+
+| | |
+|--|--|
+| **Output** | `./SignalHunters_ranking.csv` (top 100, 3 columns) |
+| **Constraints** | CPU only, ≤5 min, no network, baked Stage 0 artifacts |
+| **Full 100K repro** | `python rank.py` (requires local Stage 0 artifacts + `data/candidates.jsonl`) |
+| **Build / internals** | [`docker/README.md`](docker/README.md) |
+
+**Build locally** (maintainers):
+
+```bash
+python docker/scripts/sample_pool1k.py --source data/candidates.jsonl --seed 42
+python docker/scripts/make_sandbox_config.py
+python docker/scripts/fetch_pool1k_artifacts.py
+docker build -f docker/Dockerfile -t redrob-sandbox .
+docker tag redrob-sandbox:latest thzizsreev/redrob-sandbox:latest
+docker push thzizsreev/redrob-sandbox:latest
+```
+
+---
+
 | Track | Embedding | Role |
 |-------|-----------|------|
 | **INSTRUCTOR (Track A)** | `hkunlp/instructor-large` (2304-d, ONNX) | Production pipeline (Stages 0–6) |
@@ -227,14 +269,9 @@ python tracks/instructor/stage4/run.py
 python tracks/instructor/stage5/run.py
 ```
 
-### Docker sandbox (1K demo, not full 100K)
+### Docker sandbox (1K demo)
 
-```powershell
-docker pull thzizsreev/redrob-sandbox:latest
-docker run --rm -v "${PWD}:/output" thzizsreev/redrob-sandbox:latest
-```
-
-Writes `./SignalHunters_ranking.csv` (~21s ranking on baked 1K pool). See [Hackathon sandbox](#hackathon-sandbox-docker) and [`docker/README.md`](docker/README.md).
+Same commands as [Docker sandbox (quick run)](#docker-sandbox-quick-run) at the top of this README.
 
 ---
 
@@ -301,39 +338,17 @@ Set `stage5.team_id` and `stage6.team_id` to `SignalHunters`.
 
 ---
 
-## Hackathon sandbox (Docker)
-
-CPU sandbox ranks the baked **1K pool** through Stages 1–5. Not the full 100K reproduce path.
-
-**Pull and run** — mount repo root to `/output`:
-
-```powershell
-# Windows
-docker pull thzizsreev/redrob-sandbox:latest
-docker run --rm -v "${PWD}:/output" thzizsreev/redrob-sandbox:latest
-
-# macOS / Linux
-docker run --rm -v "$(pwd):/output" thzizsreev/redrob-sandbox:latest
-```
-
-**Build locally** (maintainers):
-
-```bash
-python docker/scripts/sample_pool1k.py --source data/candidates.jsonl --seed 42
-python docker/scripts/make_sandbox_config.py
-python docker/scripts/fetch_pool1k_artifacts.py
-docker build -f docker/Dockerfile -t redrob-sandbox .
-docker tag redrob-sandbox:latest thzizsreev/redrob-sandbox:latest
-docker push thzizsreev/redrob-sandbox:latest
-```
+## Hackathon commands
 
 | Field | Value |
 |-------|-------|
 | Sandbox link | https://hub.docker.com/r/thzizsreev/redrob-sandbox |
+| Docker 1K demo | `docker run --rm -v "$(pwd):/output" thzizsreev/redrob-sandbox:latest` |
 | Spec reproduce (100K) | `python rank.py --candidates ./data/candidates.jsonl --out ./SignalHunters_ranking.csv` |
 | Shorthand | `python rank.py` |
-| Docker 1K demo | `docker run --rm -v "$(pwd):/output" thzizsreev/redrob-sandbox:latest` |
 | Full submission | `python apply_reasoning.py` → `SignalHunters.csv` |
+
+See [Docker sandbox (quick run)](#docker-sandbox-quick-run) for pull/run commands and [Submission checklist](#submission-checklist) before upload.
 
 ---
 
